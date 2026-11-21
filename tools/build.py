@@ -103,7 +103,16 @@ def main():
         with open(os.path.join(a.out, "otm_explorer.html"), "w", encoding="utf-8", newline="\n") as f:
             f.write(page)
     ver = re.search(r'^VERSION = "(.*)"$', src, re.M).group(1)
-    print("built %s  v%s  (%d KB, page %d KB)  sha256 %s" % (os.path.relpath(out, ROOT), ver, len(src) // 1024, len(page) // 1024, digest[:16]))
+    print("built %s  v%s  (%d KB, page %d KB)  sha256 %s" % (shown(out), ver, len(src) // 1024, len(page) // 1024, digest[:16]))
+
+
+def shown(path):
+    """The path relative to the repo when that's possible. On Windows a path on another drive (the temp
+    folder is on C:, the checkout on D: on GitHub's runners) has no relative form."""
+    try:
+        return os.path.relpath(path, ROOT)
+    except ValueError:
+        return path
 
 
 if __name__ == "__main__":

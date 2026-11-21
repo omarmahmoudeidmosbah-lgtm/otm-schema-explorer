@@ -34,7 +34,7 @@ The tests start `tests/mock_otm.py`, a fake DB.XML servlet backed by DuckDB with
 
 ## Ground rules
 
-- **The release stays one file** that needs nothing but Python 3.9+. No runtime dependencies, and no calls to other servers (no CDNs or telemetry).
+- **The release stays one file** that needs nothing but Python 3.10+. No runtime dependencies, and no calls to other servers (no CDNs or telemetry).
 - **Never commit real data:** no `otm_schema_cache.json` or `otm_saved_queries.json`, no instance URLs, user names or business values in tests and screenshots.
 - **Add or update a test** for every change. Anything touching the Designer's SQL sync must keep `tests/sql_cases.py` passing (the results must stay identical).
 - **Plain, friendly messages for users.** Say what happened and what to do next.

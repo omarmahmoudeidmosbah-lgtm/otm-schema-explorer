@@ -17,13 +17,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python: ["3.10", "3.13"]
-        include:
-          - os: ubuntu-latest
-            python: "3.9"
+        python: ["3.10", "3.13"]          # oldest supported and newest tested
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
       - name: Install test tools
@@ -37,8 +34,8 @@ jobs:
     name: Browser tests · Chromium
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install test tools
@@ -50,7 +47,7 @@ jobs:
       - name: Browser tests
         run: python -m pytest tests/test_ui.py -v
       - name: Keep the built file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: otm_explorer-${{ github.sha }}
           path: |

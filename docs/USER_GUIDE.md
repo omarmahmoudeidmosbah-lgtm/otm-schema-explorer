@@ -6,7 +6,7 @@ A local tool for Oracle Transportation Management. It finds the join path betwee
 
 ## Run it
 
-You need Python 3.9 or newer. Nothing else has to be installed.
+You need Python 3.10 or newer. Nothing else has to be installed.
 
 ```
 python otm_explorer.py

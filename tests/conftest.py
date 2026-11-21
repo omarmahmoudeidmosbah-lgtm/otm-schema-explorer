@@ -99,7 +99,7 @@ def start_app(built, folder, launch_key=LAUNCH_KEY):
     cmd = [sys.executable, target, "--no-browser", "--port", str(port)] + (["--launch-key", launch_key] if launch_key else [])
     log = os.path.join(folder, "helper.log")
     with open(log, "w", encoding="utf-8") as out:
-        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=out, stderr=subprocess.STDOUT, text=True, env=ENV, cwd=folder)
+        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=out, stderr=subprocess.STDOUT, text=True, encoding="utf-8", env=ENV, cwd=folder)
     wait_port(port, proc, log=log)
     app = App(folder, port, proc, launch_key)
     app.log = log

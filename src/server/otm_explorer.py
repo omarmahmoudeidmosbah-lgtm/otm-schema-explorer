@@ -9,7 +9,7 @@ Runs on your own computer, serves the explorer page on http://127.0.0.1:8765 and
 to your OTM instance through OTM's DB.XML servlet
 (/GC3/glog.integration.servlet.DBXMLServlet?command=xmlExport) with Basic Auth.
 
-- Needs only Python 3.9+ (no pip installs).
+- Needs only Python 3.10+ (no pip installs).
 - Passwords are kept in memory only, never written to disk.
 - Only SELECT / WITH statements are sent.
 - Only the browser opened with the launch link can use the page (see SECURITY.md).
@@ -21,7 +21,7 @@ Usage:
 Optional environment variables to pre-fill the connection:
     OTM_URL=https://xxxx.otmgtm.region.ocs.oraclecloud.com  OTM_USER=DOMAIN.USER  OTM_PASS=...
 
-MIT licence - https://github.com/Omar-Mosbah/otm-schema-explorer
+MIT licence - https://github.com/omarmahmoudeidmosbah-lgtm/otm-schema-explorer
 The page bundles CodeMirror 5 and sql-formatter (both MIT); their licence texts are inside the page.
 """
 import argparse

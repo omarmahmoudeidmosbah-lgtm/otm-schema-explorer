@@ -1,8 +1,8 @@
 # OTM Schema Explorer
 
-[![CI](https://github.com/Omar-Mosbah/otm-schema-explorer/actions/workflows/ci.yml/badge.svg)](https://github.com/Omar-Mosbah/otm-schema-explorer/actions/workflows/ci.yml)
+[![CI](https://github.com/omarmahmoudeidmosbah-lgtm/otm-schema-explorer/actions/workflows/ci.yml/badge.svg)](https://github.com/omarmahmoudeidmosbah-lgtm/otm-schema-explorer/actions/workflows/ci.yml)
 ![Status: beta](https://img.shields.io/badge/status-beta-orange)
-![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)
+![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Licence: MIT](https://img.shields.io/badge/licence-MIT-green)
 
 > **Unofficial tool — not affiliated with or endorsed by Oracle.** Oracle, Oracle Transportation Management and OTM are trademarks of Oracle and/or its affiliates.
@@ -33,13 +33,13 @@ A single-file tool for people who write SQL against **Oracle Transportation Mana
 
 ## Requirements
 
-- **Python 3.9 or newer.** Nothing else to install.
+- **Python 3.10 or newer.** Nothing else to install.
 - **An OTM user that can use the DB.XML servlet** with a password (HTTP Basic Auth). Users who can only sign in through single sign-on can't connect this way, so ask your OTM administrator for a suitable integration user.
 - **A modern browser** (Chrome, Edge, Firefox or Safari).
 
 ## Quick start
 
-1. Download `otm_explorer.py` from the [Releases](https://github.com/Omar-Mosbah/otm-schema-explorer/releases) page. You can compare its SHA-256 with the `.sha256` file published next to it.
+1. Download `otm_explorer.py` from the [Releases](https://github.com/omarmahmoudeidmosbah-lgtm/otm-schema-explorer/releases) page. You can compare its SHA-256 with the `.sha256` file published next to it.
 2. Run it:
    ```
    python otm_explorer.py

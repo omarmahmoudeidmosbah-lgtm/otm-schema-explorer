@@ -214,7 +214,7 @@ def test_source_file_refuses_to_start_without_a_build(tmp_path):
     import subprocess, sys
     src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src", "server", "otm_explorer.py")
     shutil.copy(src, tmp_path / "otm_explorer.py")
-    r = subprocess.run([sys.executable, str(tmp_path / "otm_explorer.py"), "--no-browser"], capture_output=True, text=True, timeout=30, env=ENV)
+    r = subprocess.run([sys.executable, str(tmp_path / "otm_explorer.py"), "--no-browser"], capture_output=True, text=True, encoding="utf-8", timeout=30, env=ENV)
     assert r.returncode == 2 and "tools/build.py" in r.stdout
 
 

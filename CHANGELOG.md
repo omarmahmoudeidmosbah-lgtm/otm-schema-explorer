@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Python 3.10 or newer** is now the stated minimum. Python 3.9 reached end-of-life in October 2025 and GitHub removed it from its test machines, so it is no longer tested (it will most likely still run).
+- **Fixed:** `tools/build.py` crashed on Windows when the output folder was on a different drive from the repository. This made every Windows test fail.
+- CI uses the Node 24 versions of the GitHub actions (`checkout@v6`, `setup-python@v6`, `upload-artifact@v6`).
+
 ## 1.10.0-beta.1 — first public release
 
 - **Security:** the page and API now only work in the browser that opened the one-time launch link (session cookie). Press Enter in the helper window for a new link.
