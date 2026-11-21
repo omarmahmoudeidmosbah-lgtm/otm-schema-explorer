@@ -1,0 +1,2460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OTM Schema Explorer</title>
+<!--VENDOR_CSS-->
+<style>
+:root{
+  --bg:#f5f6f8; --panel:#ffffff; --ink:#1d2433; --muted:#667085; --line:#e3e6ec;
+  --accent:#c74634; --accent-soft:#fbe9e6; --blue:#2f6fde; --blue-soft:#e8f0fd;
+  --green:#178a5a; --green-soft:#e3f5ec; --amber:#b26b00; --amber-soft:#fdf2df;
+  --violet:#6b4fd8; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+header{display:flex;align-items:center;gap:16px;padding:10px 20px;background:#1d2433;color:#fff}
+header h1{font-size:16px;margin:0;font-weight:600;letter-spacing:.2px}
+header h1 span{color:#ff8a76}
+.badge{font-size:12px;padding:3px 10px;border-radius:99px;background:#3a4357;color:#cfd5e2}
+.badge.ok{background:#164d36;color:#a9f0cc}
+header .spacer{flex:1}
+header .stat{font-size:12px;color:#aab3c5}
+nav{display:flex;gap:2px;padding:0 20px;background:#fff;border-bottom:1px solid var(--line)}
+nav button{border:0;background:none;padding:12px 16px;font:inherit;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+nav button.active{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+main{padding:20px;max-width:1500px;margin:0 auto}
+section.tab{display:none}
+section.tab.active{display:block}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 12px}
+.card h3{font-size:13px;margin:14px 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.grid2{display:grid;grid-template-columns:minmax(320px,420px) 1fr;gap:16px;align-items:start}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+label.inline{flex-direction:row;align-items:center;gap:6px;color:var(--ink);font-size:13px}
+input[type=text],input[type=password],input[type=number],select,textarea{font:inherit;padding:7px 10px;border:1px solid #cfd4dd;border-radius:7px;background:#fff;color:var(--ink)}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--blue-soft);border-color:var(--blue)}
+textarea{font-family:var(--mono);font-size:13px;width:100%;resize:vertical}
+button.btn{font:inherit;padding:7px 14px;border-radius:7px;border:1px solid #cfd4dd;background:#fff;color:var(--ink);cursor:pointer;white-space:nowrap}
+button.btn:hover{background:#f2f4f7}
+button.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.btn.primary:hover{filter:brightness(.95)}
+button.btn.small{padding:3px 9px;font-size:12px}
+button.btn:disabled{opacity:.5;cursor:default}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.mono{font-family:var(--mono)}
+.msg{padding:8px 12px;border-radius:7px;font-size:13px;margin-top:10px;white-space:pre-wrap;word-break:break-word}
+.msg.err{background:var(--accent-soft);color:#8a2416}
+.msg.ok{background:var(--green-soft);color:#0f5c3c}
+.msg.info{background:var(--blue-soft);color:#1d4a9c}
+.chips{display:flex;flex-wrap:wrap;gap:6px;min-height:34px;padding:5px;border:1px solid #cfd4dd;border-radius:7px;background:#fff;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--blue-soft);color:#1d4a9c;border-radius:6px;padding:3px 8px;font-family:var(--mono);font-size:12px}
+.chip.avoid{background:#eef0f3;color:#475467}
+.chip b{cursor:pointer;font-weight:700;opacity:.6}
+.chip b:hover{opacity:1}
+.chips input{border:0;outline:0;flex:1;min-width:180px;padding:4px;font-family:var(--mono);font-size:13px}
+pre.sql{background:#1d2433;color:#e6e9ef;padding:14px;border-radius:8px;overflow:auto;font-size:12.5px;margin:0;max-height:420px}
+.kw{color:#ff9d8a}.cm{color:#7d8799}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat-box{border:1px solid var(--line);border-radius:8px;padding:8px 14px;min-width:120px}
+.stat-box .n{font-size:20px;font-weight:600}
+.stat-box .l{font-size:12px;color:var(--muted)}
+.diagram{overflow:auto;border:1px solid var(--line);border-radius:8px;background:
+  radial-gradient(circle,#e3e6ec 1px,transparent 1px) 0 0/18px 18px #fbfcfd;min-height:200px}
+.legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:22px;height:0;border-top:2px solid;vertical-align:middle;margin-right:5px}
+table.res{border-collapse:collapse;font-size:12.5px;width:max-content;min-width:100%}
+table.res th,table.res td{border-bottom:1px solid var(--line);padding:5px 10px;text-align:left;white-space:nowrap;max-width:420px;overflow:hidden;text-overflow:ellipsis}
+table.res th{position:sticky;top:0;background:#f2f4f7;font-weight:600;z-index:1}
+table.res td.null{color:#b0b7c3;font-style:italic}
+table.res tr:hover td{background:#fafbfc}
+.res-wrap{overflow:auto;max-height:60vh;border:1px solid var(--line);border-radius:8px}
+.hops{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.hops td:nth-child(1){width:26px}.hops td:nth-child(2){width:34%}.hops td:nth-child(4){width:78px}
+.hops select{width:100%}.hops td{overflow-wrap:anywhere}
+.hops td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.hops select{font-family:var(--mono);font-size:12px;max-width:100%}
+.tag{font-size:11px;padding:1px 7px;border-radius:99px;font-weight:600}
+.tag.fk{background:var(--green-soft);color:var(--green)}
+.tag.builtin{background:var(--blue-soft);color:var(--blue)}
+.tag.inferred{background:var(--amber-soft);color:var(--amber)}
+.tag.import{background:#efeafd;color:var(--violet)}
+.presets button{margin:0 6px 6px 0}
+.list{max-height:340px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.list div{padding:5px 10px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px;cursor:pointer}
+.list div:hover{background:var(--blue-soft)}
+.log{font-family:var(--mono);font-size:12px;background:#f7f8fa;border:1px solid var(--line);border-radius:7px;padding:8px 10px;max-height:180px;overflow:auto;white-space:pre-wrap}
+svg text{font-family:var(--mono)}
+svg .node{cursor:pointer}
+svg .node:hover rect.box{stroke:var(--blue);stroke-width:2}
+.hist div{font-family:var(--mono);font-size:12px;padding:5px 8px;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist div:hover{background:var(--blue-soft)}
+details summary{cursor:pointer;color:var(--muted);font-size:13px}
+@media (max-width:980px){.grid2{grid-template-columns:1fr}}
+
+/* ---------- Query Designer ---------- */
+#tab-design.active{display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;align-items:start}
+#tab-design > div{min-width:0}
+.dside{position:sticky;top:10px}
+.dside .list{max-height:calc(100vh - 260px)}
+.dside .list div{cursor:grab;display:flex;justify-content:space-between;gap:6px}
+.dside .list div span{color:#98a2b3;font-size:11px}
+.dcanvas-wrap{position:relative;height:480px;min-height:260px;overflow:auto;resize:vertical;border:1px solid var(--line);border-radius:8px;
+  background:radial-gradient(circle,#dde1e8 1px,transparent 1px) 0 0/18px 18px #fbfcfd}
+#dCanvas{position:relative;width:3000px;height:1800px}
+#dSvg{position:absolute;left:0;top:0;width:3000px;height:1800px;pointer-events:none}
+#dSvg path.hit{pointer-events:stroke;cursor:pointer}
+.dbox{position:absolute;width:250px;background:#fff;border:1px solid #b9c0cc;border-radius:8px;box-shadow:0 2px 8px rgba(29,36,51,.08);font-size:12px;z-index:2}
+.dbox.sel{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-soft)}
+.dhead{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#1d2433;color:#fff;border-radius:7px 7px 0 0;cursor:move;user-select:none}
+.dhead b{font-family:var(--mono);font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dhead .al{font-family:var(--mono);font-size:11px;color:#ff9d8a}
+.dhead .ic{cursor:pointer;opacity:.7;padding:0 3px}
+.dhead .ic:hover{opacity:1}
+.dfilter{width:100%;border:0;border-bottom:1px solid var(--line);padding:5px 8px;font:12px var(--mono);outline:0}
+.dbody{max-height:230px;overflow:auto}
+.dcol{display:flex;flex-direction:row;color:var(--ink);align-items:center;gap:6px;padding:2px 8px;font-family:var(--mono);font-size:11.5px;cursor:pointer;white-space:nowrap}
+.dcol:hover{background:var(--blue-soft)}
+.dcol.drop{background:#d9f2e6;outline:1px dashed var(--green)}
+.dcol small{color:#98a2b3;margin-left:auto;font-size:10px}
+.dcol .k{width:14px;text-align:center;font-size:10px}
+.dcol.all{color:var(--muted);border-bottom:1px solid var(--line)}
+.dnote{padding:4px 8px;color:var(--amber);font-size:10.5px;background:var(--amber-soft)}
+.dpop{position:absolute;z-index:5;background:#fff;border:1px solid #b9c0cc;border-radius:9px;box-shadow:0 8px 24px rgba(29,36,51,.18);padding:12px 14px;width:400px;font-size:12.5px}
+.dpop h4{margin:0 0 8px;font-size:13px}
+.dpop .pairs{font-family:var(--mono);font-size:11.5px;background:#f5f6f8;border-radius:6px;padding:6px 8px;margin-bottom:8px}
+.dpop label.inline{margin:3px 0;display:flex}
+.dpop select{width:100%;font-family:var(--mono);font-size:11.5px}
+.dempty{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);color:#98a2b3;text-align:center;pointer-events:none;font-size:14px}
+table.crit{border-collapse:collapse;width:100%;font-size:12.5px}
+table.crit th{background:#f2f4f7;text-align:left;font-weight:600;padding:6px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.crit td{padding:3px 6px;border-bottom:1px solid var(--line)}
+table.crit input[type=text],table.crit select{padding:4px 6px;font-size:12px;width:100%;min-width:90px}
+table.crit input[type=number]{width:54px;padding:4px}
+table.crit td.c{font-family:var(--mono);white-space:nowrap}
+table.crit .rb{cursor:pointer;color:var(--muted);padding:0 3px}
+table.crit .rb:hover{color:var(--accent)}
+.dtoolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+
+/* ---------- steps ---------- */
+.sp{flex:1}
+.step{border-left:4px solid var(--green)}
+.step.base{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:10px 12px;margin-top:12px;background:#fcfcfd}
+.step-h{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.stepno{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#1d2433;color:#fff;font-size:12px;font-weight:700}
+.sname{font-weight:700;width:190px}
+.incoming{margin-bottom:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calc{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:#fbfcfd}
+.calc-h{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.calc-h select{font-family:var(--mono);font-size:12.5px;font-weight:600}
+.cname{width:200px;font-weight:600}
+.calc-g{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:6px;align-items:flex-end}
+.calc-g input[type=text]{width:220px}.calc-g input[type=number]{width:90px}
+.calc-row{display:flex;gap:10px;align-items:flex-start;margin:6px 0}
+.calc-row .lbl{width:92px;flex-shrink:0;font-size:12px;color:var(--muted);padding-top:7px}
+.calc-row select{font-size:12.5px}
+.orow{display:flex;gap:6px;align-items:center;margin-bottom:5px}
+.orow input[type=text]{width:240px;font-size:12.5px;padding:5px 8px}.orow select{padding:5px 6px}
+.small-chips{flex:1;min-height:30px;padding:3px}
+.small-chips input{min-width:140px;font-size:12.5px}
+.calc textarea{font-size:12.5px}
+.desc{font-size:12.5px;color:#1d4a9c;background:var(--blue-soft);border-radius:6px;padding:6px 9px;margin-top:6px}
+.warn-l{color:#8a2416;font-size:12px;margin-top:3px}
+.warn:empty{display:none}.warn{margin-top:8px}
+.rb{cursor:pointer;color:var(--muted);padding:0 3px;user-select:none}.rb:hover{color:var(--accent)}
+.modal{position:fixed;inset:0;background:rgba(29,36,51,.45);z-index:50;display:flex;align-items:center;justify-content:center}
+.modal-box{background:#fff;border-radius:12px;width:min(1100px,94vw);max-height:90vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-h{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.modal-b{display:grid;grid-template-columns:340px 1fr;min-height:0;overflow:hidden}
+#recList{overflow:auto;border-right:1px solid var(--line);max-height:calc(90vh - 60px)}
+.rec{padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.rec:hover{background:#f7f8fa}.rec.on{background:var(--blue-soft);box-shadow:inset 3px 0 var(--blue)}
+.rec b{font-size:13px}
+#recForm{padding:16px 20px;overflow:auto;max-height:calc(90vh - 60px)}
+#recForm label{margin-bottom:10px}
+.recslots{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-top:12px}
+#recForm input[type=text]{width:100%}
+/* ---------- environments (v1.6) ---------- */
+.envsw{position:relative}
+.envbtn{display:flex;align-items:center;gap:8px;background:#2b3346;border:1px solid #3a4357;color:#e6e9ef;border-radius:99px;padding:3px 12px 3px 9px;font:inherit;font-size:12.5px;cursor:pointer}
+.envbtn:hover{background:#343d53}
+.caret{opacity:.6;font-size:10px}
+.envdot{width:8px;height:8px;border-radius:50%;background:#667085;display:inline-block;flex:none}
+.envdot.on{background:#3ccf8e;box-shadow:0 0 0 3px rgba(60,207,142,.2)}
+.envtag{display:inline-block;font:700 10px/17px system-ui,sans-serif;letter-spacing:.4px;padding:0 6px;border-radius:4px;background:#e8f0fd;color:#1d4a9c;white-space:nowrap}
+.envtag:empty{display:none}
+.envtag.dev{background:#d9f5e6;color:#0f5c3c}.envtag.test{background:#fdf0d5;color:#8a5300}
+.envtag.prod{background:#e5484d;color:#fff}.envtag.other{background:#e8f0fd;color:#1d4a9c}
+header.env-prod{background:#3b1418;box-shadow:inset 0 -3px 0 #e5484d}
+header.env-dev{box-shadow:inset 0 -3px 0 #2fb374}
+header.env-test{box-shadow:inset 0 -3px 0 #e0a030}
+.envmenu{position:absolute;top:calc(100% + 6px);left:0;min-width:360px;background:#fff;color:var(--ink);border:1px solid #d0d5dd;border-radius:10px;box-shadow:0 12px 32px rgba(16,24,40,.25);padding:6px;z-index:100}
+.emi{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:13px}
+.emi:hover{background:#f2f4f7}.emi.cur{background:#e8f0fd}
+.emi .pn,.pitem .pn{display:flex;flex-direction:column;flex:1;min-width:0;line-height:1.3}
+.emi .pn .small{color:var(--muted)}
+.emi .on{color:#178a5a}.emi .off{color:var(--muted)}
+.emi.manage{border-top:1px solid var(--line);margin-top:4px;border-radius:0 0 7px 7px;color:var(--blue)}
+.plist{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.pitem{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.pitem:hover{background:#f8f9fb}.pitem.sel{border-color:var(--blue);background:var(--blue-soft)}
+.pitem .pn .small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pitem .pst{display:flex;gap:6px;align-items:center}
+.ed-wrap.prod{border:2px solid #e5484d}
+#toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);background:#1d2433;color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:200}
+#toast.show{opacity:1;transform:translate(-50%,0)}#toast.prod{background:#b4232a}
+/* ---------- designer SQL sync (v1.7) ---------- */
+.dbox.derived{border-color:#8c7ae6}
+.dbox.derived .dhead{background:#4b3fa0}
+.dnote.der{font-family:var(--mono);font-size:10.5px;color:#5b4fb0;background:#f3f0fd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ed-wrap.dsql{height:380px;border-color:#2a3245}
+.dsql-state{font-size:12.5px;margin-top:8px}
+.dsql-state:empty{display:none}
+.dsql-state .msg{margin-top:0}
+.dsql-state .msg button{margin-left:8px}
+#tab-design.dlocked #dWrap,#tab-design.dlocked #dGrid,#tab-design.dlocked #dConds,#tab-design.dlocked #dSteps,#tab-design.dlocked #dAddExpr,#tab-design.dlocked .dside{opacity:.4;pointer-events:none;filter:grayscale(.6)}
+.dlock-msg{display:none}
+#tab-design.dlocked .dlock-msg{display:block;background:var(--amber-soft);color:#6b4200;border:1px solid #f0d49a;border-radius:8px;padding:9px 12px;font-size:13px;margin-bottom:10px}
+.dconds{margin-top:12px}
+.dconds h3{margin:0 0 6px}
+.dcond{display:flex;gap:8px;align-items:center;margin-bottom:5px}
+.dcond input[type=text]{flex:1;font-family:var(--mono);font-size:12px}
+.dcond select{font-size:12px}
+.dpop textarea{font-family:var(--mono)}
+.appfoot{max-width:1500px;margin:6px auto 24px;padding:0 20px;font-size:11.5px;color:#98a2b3;text-align:center}
+.appfoot a{color:#98a2b3}
+/* ---------- saved queries (v1.9) ---------- */
+.modal-box.dlg{padding-bottom:16px;overflow:auto}
+.modal-box.dlg > :not(.modal-h){margin-left:18px;margin-right:18px}
+.modal-box.dlg > .modal-h + *{margin-top:14px}
+.modal-h .sp{flex:1}
+.sqtabs{display:flex;gap:4px;margin-bottom:10px;border-bottom:1px solid var(--line)}
+.sqtabs button{border:0;background:none;font:inherit;font-size:13px;padding:6px 10px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.sqtabs button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--accent)}
+.svlist{margin-top:8px;max-height:calc(100vh - 300px);overflow:auto}
+.svg{margin-bottom:6px}
+.svgh{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;padding:4px 2px;cursor:pointer;user-select:none}
+.svgh.fav{color:#b26b00;cursor:default}
+.svi{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;cursor:pointer;font-size:12.5px}
+.svi:hover{background:#f2f4f7}
+.svstar{color:#c0c5cf;font-size:13px;width:14px;flex:none}.svstar.on{color:#e0a030}
+.svn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.svd{color:var(--violet);margin-left:5px;font-size:11px}
+.svp{margin-left:6px;font-family:var(--mono);font-size:10.5px;color:#0b6b5f;background:#e6f6f4;border-radius:4px;padding:0 4px}
+.svact{display:none;gap:4px;flex:none}
+.svi:hover .svact{display:flex}
+.svact span{opacity:.55;padding:0 2px;font-size:12px}.svact span:hover{opacity:1}
+.svfoot{margin-top:8px;color:var(--muted)}
+.svfoot a{color:var(--blue)}
+.hist div{display:flex;gap:6px;align-items:center}
+.hist .ht{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hsave{opacity:0;color:#e0a030;padding:0 3px}
+.hist div:hover .hsave{opacity:.8}.hsave:hover{opacity:1!important}
+.qt-sv{font-size:10.5px;color:#e0a030}
+.qt-mod{color:var(--accent);font-weight:700}
+.prm-grid{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;margin-top:6px}
+.prm-grid label{font-size:13px;color:var(--ink)}
+/* ---------- speed (v1.8) ---------- */
+table.res.vg{table-layout:fixed;width:auto;min-width:0}
+table.res.vg td,table.res.vg th{max-width:none}
+table.res.vg tr.vsp td{padding:0;border:0}
+.tbrk{color:var(--muted)}
+button.btn.primary.stop{background:#475467;border-color:#475467}
+.warnc{color:var(--amber);font-weight:600}
+.diag{margin-top:12px;border:1px solid #d7dff0;background:#fbfcff;border-radius:10px;padding:12px 14px;font-size:13px}
+.diag-h{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.diag-h .sp{flex:1}
+.diag-sec{margin-top:10px}
+.diag-sec h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+.tbar{display:flex;height:22px;border-radius:6px;overflow:hidden;font-size:11px;color:#fff;margin-bottom:6px}
+.tbar span{display:flex;align-items:center;padding:0 6px;white-space:nowrap;overflow:hidden;min-width:4px}
+.b-otm{background:#c74634}.b-net{background:#2f6fde}.b-tool{background:#667085}
+table.dtab{border-collapse:collapse;width:100%;font-size:12.5px}
+table.dtab th,table.dtab td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.dtab th{color:var(--muted);font-weight:600;font-size:11.5px}
+table.dtab tr.bad td{background:#fff6f4}
+.okc{color:var(--green);font-weight:600}.badc{color:#b42318;font-weight:600}
+.dp{padding:5px 8px;border-radius:6px;margin-bottom:5px;font-size:12.5px}
+.dp.err{background:var(--accent-soft);color:#8a2416}.dp.warn{background:var(--amber-soft);color:#6b4200}.dp.info{background:var(--blue-soft);color:#1d4a9c}
+/* ---------- query tabs (v1.7) ---------- */
+.qtabs{display:flex;gap:2px;align-items:flex-end;margin:-4px 0 10px;border-bottom:1px solid var(--line);overflow-x:auto}
+.qtab{display:flex;align-items:center;gap:6px;padding:6px 8px 6px 12px;border:1px solid transparent;border-bottom:none;border-radius:7px 7px 0 0;font-size:12.5px;color:var(--muted);cursor:pointer;white-space:nowrap;max-width:220px;user-select:none}
+.qtab:hover{background:#f5f6f8}
+.qtab.on{background:#fff;border-color:var(--line);color:var(--ink);font-weight:600;margin-bottom:-1px;padding-bottom:7px}
+.qt-t{overflow:hidden;text-overflow:ellipsis}
+.qt-x{opacity:.45;padding:0 3px;border-radius:4px;font-size:14px;line-height:1}
+.qt-x:hover{opacity:1;background:#eef0f3}
+.qt-dot{width:7px;height:7px;border-radius:50%;background:var(--blue)}
+.qt-spin{width:9px;height:9px;border:2px solid #c7d2e6;border-top-color:var(--blue);border-radius:50%;animation:qspin .8s linear infinite}
+@keyframes qspin{to{transform:rotate(360deg)}}
+.qt-in{font:inherit;width:140px;padding:1px 4px}
+.qtab-add{border:0;background:none;font-size:18px;line-height:1;color:var(--muted);cursor:pointer;padding:4px 10px;border-radius:6px}
+.qtab-add:hover{background:#f2f4f7;color:var(--ink)}
+.rtabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.rtab{font-size:12px;padding:4px 10px;border-radius:99px;border:1px solid var(--line);cursor:pointer;font-family:var(--mono);background:#fff}
+.rtab small{color:var(--muted);font-family:system-ui,sans-serif}
+.rtab.on{background:var(--blue-soft);border-color:#b8cdf5;color:#1d4a9c}
+.rtab.err{border-color:#f3c3bb;color:#8a2416}.rtab.err.on{background:var(--accent-soft)}
+/* ---------- record 360 (v1.6) ---------- */
+.r360-bar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.crumbs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12.5px;margin-top:10px}
+.crumbs:empty{display:none}
+.crumbs a{color:var(--blue);cursor:pointer;font-family:var(--mono)}
+.crumbs .cur{font-weight:600;font-family:var(--mono)}
+.rhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rhead h2{margin:0;font-family:var(--mono);font-size:15px}
+.rhead .sp{flex:1}
+.ttag{font:600 11px/20px system-ui,sans-serif;padding:0 9px;border-radius:99px;background:var(--blue-soft);color:#1d4a9c}
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:0 22px;margin-top:12px}
+.fld{display:flex;gap:10px;padding:4px 0;border-bottom:1px dashed #eceef2;font-size:12.5px;min-width:0;align-items:baseline}
+.fld .k{color:var(--muted);font-family:var(--mono);font-size:11.5px;flex:0 0 42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fld .v{font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.fld .v.null{color:#c0c5cf}
+a.gl{color:var(--blue);cursor:pointer;text-decoration:none;border-bottom:1px dotted var(--blue)}
+a.gl:hover{border-bottom-style:solid}
+.gl-t{font:600 9.5px system-ui,sans-serif;color:#98a2b3;margin-left:6px}
+.gl-n{color:var(--muted);margin-left:6px;font-family:system-ui,sans-serif}
+.hl-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.hl-row:empty{display:none}
+.hchip{font-size:12px;border-radius:6px;padding:3px 9px;background:#f2f4f7;font-family:var(--mono)}
+.hchip b{font:600 10.5px system-ui,sans-serif;color:#475467;margin-right:6px}
+.hchip.st{background:var(--green-soft)}.hchip.rf{background:var(--blue-soft)}.hchip.rm{background:var(--amber-soft)}
+.rel{border:1px solid var(--line);border-radius:8px;margin-bottom:6px}
+.rel.open{border-color:#c7d7f7}
+.rel .rh{display:flex;align-items:center;gap:12px;padding:7px 12px;cursor:pointer;font-size:13px}
+.rel .rh:hover{background:#f8f9fb}
+.rel .cnt{min-width:46px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:var(--blue)}
+.rel .tn,.relm .tn{font-family:var(--mono);font-weight:600;font-size:12.5px}
+.via{color:var(--muted);font-family:var(--mono);font-size:11.5px}
+.rel .sp,.relm .sp{flex:1}
+.rel .rb{padding:0 12px 10px}
+.relgrp{margin-top:10px;font-size:13px}
+.relgrp summary{cursor:pointer;color:var(--muted)}
+.relm{display:flex;align-items:center;gap:10px;padding:5px 10px;border-bottom:1px dashed #eceef2}
+table.res td a.go{visibility:hidden;margin-left:6px;color:var(--blue);text-decoration:none;font-weight:700;cursor:pointer}
+table.res td:hover a.go{visibility:visible}
+.CodeMirror-hints .hk-val{background:#e6f6f4;color:#0b6b5f}
+/* ---------- SQL editor (v1.5) ---------- */
+.ed-toolbar{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.ed-toolbar .sp{flex:1}
+.kbd{font-size:10.5px;opacity:.65;margin-left:6px;font-family:var(--mono)}
+.ed-wrap{border:1px solid #2a3245;border-radius:8px;overflow:hidden;resize:vertical;height:360px;min-height:160px}
+.ed-wrap .CodeMirror{height:100%;font-family:var(--mono);font-size:13px;line-height:1.55}
+.ed-status{display:flex;gap:14px;font-size:11.5px;color:var(--muted);font-family:var(--mono);padding:5px 2px 0;white-space:nowrap;overflow:hidden}
+.ed-status .scope{overflow:hidden;text-overflow:ellipsis}
+.ed-status b{color:var(--ink);font-weight:600}
+.cm-s-otm.CodeMirror{background:#1d2433;color:#e6e9ef}
+.cm-s-otm .CodeMirror-gutters{background:#171d2a;border-right:1px solid #2a3245}
+.cm-s-otm .CodeMirror-linenumber{color:#5c667a}
+.cm-s-otm .CodeMirror-cursor{border-left:2px solid #ffb4a6}
+.cm-s-otm div.CodeMirror-selected{background:#33405c}
+.cm-s-otm.CodeMirror-focused div.CodeMirror-selected{background:#3d4f75}
+.cm-s-otm .CodeMirror-line::selection,.cm-s-otm .CodeMirror-line>span::selection,.cm-s-otm .CodeMirror-line>span>span::selection{background:#3d4f75}
+.cm-s-otm span.cm-keyword{color:#ff9d8a;font-weight:600}
+.cm-s-otm span.cm-builtin{color:#8ab4f8}
+.cm-s-otm span.cm-atom{color:#d3a6ff}
+.cm-s-otm span.cm-string{color:#a5d6a7}
+.cm-s-otm span.cm-number{color:#f6c177}
+.cm-s-otm span.cm-comment{color:#7d8799;font-style:italic}
+.cm-s-otm span.cm-operator{color:#c9d1e0}
+.cm-s-otm span.cm-variable-2,.cm-s-otm span.cm-variable-3{color:#e6e9ef}
+.cm-s-otm span.cm-otm-table{color:#6fd6c4}
+.cm-s-otm span.cm-keyword.cm-otm-table{color:#ff9d8a}
+.cm-s-otm span.cm-string.cm-otm-table{color:#a5d6a7}
+.cm-s-otm span.cm-comment.cm-otm-table{color:#7d8799}
+.cm-s-otm .CodeMirror-matchingbracket{color:#fff!important;background:#3d4b66;outline:1px solid #6b7a99}
+.cm-s-otm .CodeMirror-nonmatchingbracket{color:#ff6b6b!important}
+.cm-s-otm .CodeMirror-placeholder{color:#5c667a}
+.ed-err{text-decoration:underline wavy #ff6b6b;text-underline-offset:3px;background:rgba(255,90,90,.13)}
+.ed-warn{text-decoration:underline wavy #f6c177;text-underline-offset:3px}
+.ed-run{background:rgba(138,180,248,.16)}
+.ed-issues{margin-top:8px;font-size:12.5px}
+.ed-issues div{padding:3px 8px;border-radius:5px;cursor:pointer;display:flex;gap:8px}
+.ed-issues div:hover{background:#f2f4f7}
+.ed-issues .e{color:#8a2416}.ed-issues .w{color:#8a5300}
+ul.CodeMirror-hints{font-family:var(--mono);font-size:12.5px;max-height:310px;border-radius:8px;box-shadow:0 10px 28px rgba(16,24,40,.2);border:1px solid #d0d5dd;padding:4px;z-index:60;background:#fff;max-width:760px}
+ul.CodeMirror-hints li.CodeMirror-hint{display:flex;align-items:center;gap:8px;padding:3px 8px;border-radius:5px;color:#1d2433;max-width:none;white-space:nowrap}
+ul.CodeMirror-hints li.CodeMirror-hint-active{background:#e8f0fd;color:#1d2433}
+.hk{font:600 9.5px/16px system-ui,sans-serif;border-radius:4px;padding:0 5px;min-width:36px;text-align:center;text-transform:uppercase;flex:none}
+.hk-col{background:#e3f5ec;color:#0f5c3c}.hk-tbl{background:#e8f0fd;color:#1d4a9c}.hk-join{background:#fbe9e6;color:#8a2416}
+.hk-on{background:#fbe9e6;color:#8a2416}.hk-kw{background:#eef0f3;color:#475467}.hk-fn{background:#f1ecfd;color:#5b3fc4}
+.hk-als{background:#fdf2df;color:#8a5300}.hk-cte{background:#fdf2df;color:#8a5300}
+.hl-t{overflow:hidden;text-overflow:ellipsis}
+.hd{margin-left:auto;padding-left:18px;color:#98a2b3;font-size:11px;flex:none}
+.helpgrid{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:12.5px}
+.helpgrid span:nth-child(odd){font-family:var(--mono);color:var(--accent)}
+.basebox{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:13px;margin-bottom:12px}
+.basebox .k{color:var(--muted)}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:99px;background:var(--green-soft);color:#0f5c3c;margin-left:6px}
+.pill.grey{background:#eef0f3;color:#475467}
+</style>
+</head>
+<body>
+<header>
+  <h1>OTM <span>Schema Explorer</span></h1>
+  <span class="badge" style="background:none;color:#8a94a6;padding:0">v__VERSION__</span>
+  <div class="envsw" id="envSw">
+    <button class="envbtn" id="envBtn" title="Switch environment"><span class="envdot" id="envDot"></span><span id="connBadge">Not connected</span><span class="caret">▾</span></button>
+    <div class="envmenu" id="envMenu" style="display:none"></div>
+  </div>
+  <div class="spacer"></div>
+  <span class="stat" id="hdrStats"></span>
+</header>
+<nav>
+  <button data-tab="path" class="active">Path Finder</button>
+  <button data-tab="design">Query Designer</button>
+  <button data-tab="explore">Table Explorer</button>
+  <button data-tab="r360">Record 360</button>
+  <button data-tab="query">Query Runner</button>
+  <button data-tab="schema">Schema Data</button>
+  <button data-tab="connect">Connection</button>
+</nav>
+<main>
+
+<!-- ============================ PATH FINDER ============================ -->
+<section class="tab active" id="tab-path">
+  <div class="card">
+    <h2>Which tables do you want to join?</h2>
+    <div class="chips" id="pathChips"><input id="pathInput" list="tableList" placeholder="Type a table name and press Enter (e.g. ORDER_RELEASE)"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn primary" id="btnFind">Find join path</button>
+      <label>Join type
+        <select id="joinType"><option>INNER JOIN</option><option>LEFT JOIN</option></select></label>
+      <label class="inline"><input type="checkbox" id="useInferred" checked> Use inferred (naming) links</label>
+      <label class="inline"><input type="checkbox" id="autoHub" checked> Don't route through busy hub tables</label>
+      <button class="btn" id="btnClearPath">Clear</button>
+    </div>
+    <details style="margin-top:12px">
+      <summary>Avoid these tables as in-between steps (wildcards allowed, e.g. IE_*)</summary>
+      <div class="chips" id="avoidChips" style="margin-top:8px"><input id="avoidInput" list="tableList" placeholder="Add table or pattern, Enter"></div>
+      <div class="small muted" style="margin-top:6px">Tables you pick above are always allowed. Hub tables (LOCATION, CURRENCY, STATUS_VALUE…) link everything to everything, so routing through them gives joins that are valid SQL but meaningless.</div>
+    </details>
+    <div class="presets small" style="margin-top:12px"><span class="muted">Try:</span>
+      <button class="btn small" data-preset="ORDER_RELEASE,SHIPMENT">Order → Shipment</button>
+      <button class="btn small" data-preset="ORDER_RELEASE,INVOICE">Order → Invoice</button>
+      <button class="btn small" data-preset="SHIPMENT,VOUCHER">Shipment → Voucher</button>
+      <button class="btn small" data-preset="SHIPMENT,SHIPMENT_STOP,LOCATION">Shipment stops + locations</button>
+      <button class="btn small" data-preset="SHIPMENT,RATE_GEO,RATE_OFFERING,SERVPROV">Shipment rates</button>
+    </div>
+    <div id="pathMsg"></div>
+  </div>
+
+  <div id="pathResult" style="display:none">
+    <div class="card">
+      <h2>Join diagram</h2>
+      <div class="diagram" id="pathDiagram"></div>
+      <div class="legend">
+        <span><i style="border-color:var(--green)"></i>Real foreign key</span>
+        <span><i style="border-color:var(--blue)"></i>Built-in OTM knowledge</span>
+        <span><i style="border-color:var(--violet)"></i>Imported</span>
+        <span><i style="border-color:var(--amber);border-top-style:dashed"></i>Inferred from column names — verify</span>
+        <span>Click an in-between table to avoid it and find another route.</span>
+      </div>
+    </div>
+    <div class="grid2" style="grid-template-columns:1fr 1fr">
+      <div class="card">
+        <h2>Join steps</h2>
+        <div class="small muted" style="margin-bottom:8px">When two tables link in more than one way (e.g. source vs. destination location), pick the one you mean.</div>
+        <table class="hops" id="hopTable"></table>
+      </div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+          <h2 style="margin:0">Generated SQL</h2>
+          <div class="row"><button class="btn small" id="btnCopySql">Copy</button><button class="btn small" id="btnToDesigner">Open in Designer</button><button class="btn small primary" id="btnRunSql">Open in Query Runner →</button></div>
+        </div>
+        <pre class="sql" id="sqlOut"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================ QUERY DESIGNER ============================ -->
+<section class="tab" id="tab-design">
+  <div class="card dside">
+    <h2>Tables</h2>
+    <input type="text" id="dSearch" placeholder="Search tables…" style="width:100%;margin-bottom:8px">
+    <div class="list" id="dTableList"></div>
+    <div class="small muted" style="margin-top:8px">Drag a table onto the diagram, or double-click it.</div>
+  </div>
+  <div>
+    <div class="card">
+      <div class="dtoolbar">
+        <h2 style="margin:0;flex:1">Query Designer</h2>
+        <label class="inline"><input type="checkbox" id="dAutoJoin" checked> Auto-join (adds bridge tables)</label>
+        <label class="inline"><input type="checkbox" id="dDistinct"> DISTINCT</label>
+        <button class="btn small primary" id="dRecipes">📚 Recipes</button>
+        <button class="btn small" id="dArrange">Arrange</button>
+        <button class="btn small" id="dClear">New query</button>
+      </div>
+      <div class="dlock-msg" id="dLockMsg"></div>
+      <div class="dcanvas-wrap" id="dWrap">
+        <div id="dCanvas"><svg id="dSvg"></svg><div class="dempty" id="dEmpty">Drag tables here<br><span class="small">Tick columns to output them · drag a column onto another table's column to join manually · click a join line to change it</span></div></div>
+      </div>
+      <div id="dMsg"></div>
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h2 style="margin:0">Columns &amp; criteria</h2>
+        <button class="btn small" id="dAddExpr">+ Add expression</button>
+      </div>
+      <div style="overflow:auto"><table class="crit" id="dGrid"></table></div>
+      <div id="dConds"></div>
+      <div class="small muted" style="margin-top:6px">Filter examples: <span class="mono">DOMAIN.X</span> (becomes = 'DOMAIN.X') · <span class="mono">LIKE '%RUH%'</span> · <span class="mono">&gt; SYSDATE - 7</span> · <span class="mono">IN ('A','B')</span> · <span class="mono">IS NULL</span>. Filters on aggregated columns go into HAVING.</div>
+    </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2 style="margin:0">Steps <span class="small muted" style="font-weight:400">— each step reads the one before it (WITH … AS)</span></h2>
+        <div class="row"><button class="btn small" id="dRecipes2">📚 Recipes</button><button class="btn small primary" id="dAddCalcStep">+ Calculate step (window functions)</button><button class="btn small" id="dAddSumStep">+ Summarize step (group by)</button></div>
+      </div>
+      <div class="step base"><div class="step-h"><span class="stepno">1</span><b class="mono">BASE</b><span class="muted small">the diagram and grid above</span><span class="sp"></span><button class="btn small" id="dPreviewBase">Preview ▶</button></div>
+        <div class="small muted" id="dBaseInfo"></div></div>
+    </div>
+    <div id="dSteps"></div>
+    <div class="grid2" style="grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+          <h2 style="margin:0">SQL <span class="small muted" style="font-weight:400">— editable, updates the diagram</span></h2>
+          <div class="row"><button class="btn small" id="dSqlApply" style="display:none">Update diagram</button><button class="btn small" id="dSave" title="Save this query with its diagram">☆ Save</button><button class="btn small" id="dCopy">Copy</button><button class="btn small" id="dToRunner">Open in Query Runner</button><button class="btn small primary" id="dRun">Run ▶</button></div>
+        </div>
+        <div class="ed-wrap dsql" id="dSqlWrap"><textarea id="dSqlEd" spellcheck="false"></textarea></div>
+        <div class="dsql-state" id="dSqlState"></div>
+      </div>
+      <div class="card" id="dResCard">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+          <h2 style="margin:0">Results</h2>
+          <label class="inline">Max rows <input type="number" id="dMax" value="200" min="1" max="250000" style="width:90px"></label>
+        </div>
+        <div class="small muted" id="dRunInfo"></div>
+        <div class="res-wrap" id="dRes" style="max-height:340px"><div class="muted" style="padding:14px">Run the query to see rows.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ EXPLORER ============================ -->
+<section class="tab" id="tab-explore">
+  <div class="card">
+    <div class="row">
+      <label style="flex:1;min-width:260px">Table
+        <input type="text" id="exInput" list="tableList" placeholder="e.g. SHIPMENT"></label>
+      <label>Filter links<input type="text" id="exFilter" placeholder="e.g. REFNUM"></label>
+      <button class="btn primary" id="btnExplore">Show</button>
+      <button class="btn" id="btnExAddPath">Add to Path Finder</button>
+      <button class="btn" id="btnExPreview">Preview rows</button>
+    </div>
+    <div id="exMsg"></div>
+  </div>
+  <div class="card">
+    <h2 id="exTitle">Relationships</h2>
+    <div class="small muted" style="margin-bottom:8px">Left: tables this table points to (its <b>_GID</b> columns). Right: tables that point to it. Click any table to move to it.</div>
+    <div class="diagram" id="exDiagram"></div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Columns</h2><button class="btn small" id="btnExCols">Load columns from OTM</button></div>
+    <div id="exCols" class="small muted" style="margin-top:10px">Connect to OTM to load the full column list.</div>
+  </div>
+</section>
+
+<!-- ============================ RECORD 360 ============================ -->
+<section class="tab" id="tab-r360">
+  <div class="card">
+    <div class="r360-bar">
+      <label style="flex:1;min-width:300px">GID<input type="text" id="rVal" spellcheck="false" placeholder="Paste any GID, e.g. MYDOMAIN.SH000123"></label>
+      <label>Table<input type="text" id="rTable" list="tableList" spellcheck="false" placeholder="auto-detect" style="width:260px"></label>
+      <label id="rKeyLbl" style="display:none" title="This table has no TABLE_GID column — pick the column to look up">Key<select id="rKey" style="max-width:220px"></select></label>
+      <button class="btn primary" id="rOpen">Open</button>
+      <span class="envtag" id="rEnv"></span>
+    </div>
+    <div class="small muted" style="margin-top:6px">Leave the table empty to detect it (checks shipment, order release, location, invoice, voucher, item, ship unit and other main objects). An XID without a domain is also tried with your domain. Click any blue GID to jump to that record.</div>
+    <div class="crumbs" id="rCrumbs"></div>
+    <div id="rMsg"></div>
+  </div>
+  <div id="rBody"></div>
+</section>
+
+<!-- ============================ QUERY ============================ -->
+<section class="tab" id="tab-query">
+  <div class="grid2" style="grid-template-columns:minmax(0,1fr) 300px">
+    <div class="card">
+      <div class="qtabs" id="qTabs"></div>
+      <div class="ed-toolbar">
+        <button class="btn primary" id="btnRun" title="Runs the selection, or the statement under the cursor">▶ Run<span class="kbd">Ctrl+Enter</span></button>
+        <button class="btn" id="btnRunAll" title="Run every statement in this tab (separated by ;) — each result gets its own tab">▶▶ Run all<span class="kbd">Ctrl+Alt+Enter</span></button>
+        <button class="btn" id="btnCheck" title="Asks Oracle to parse and validate the query without fetching rows (wrapped in WHERE 1=0)">✓ Check SQL<span class="kbd">Ctrl+Shift+Enter</span></button>
+        <button class="btn" id="btnDiag" title="Explain why this query is slow: where the time goes, table sizes, indexes, SQL patterns">🩺 Diagnose</button>
+        <button class="btn" id="btnFormat" title="Format the selection or the whole editor">Format<span class="kbd">Shift+Alt+F</span></button>
+        <span class="envtag" id="runEnv"></span>
+        <span class="sp"></span>
+        <label class="inline small">Insert names <select id="edCase"><option value="auto">as I type</option><option value="upper">UPPER</option><option value="lower">lower</option></select></label>
+        <button class="btn small" id="btnEdHelp">Shortcuts</button>
+      </div>
+      <div class="ed-wrap" id="edWrap"><textarea id="sqlEditor" spellcheck="false"></textarea></div>
+      <div class="ed-status"><span id="edPos">Ln 1, Col 1</span><span class="scope" id="edScope"></span></div>
+      <div id="edHelp" class="msg info" style="display:none"><div class="helpgrid">
+        <span>alias.</span><span>columns of that table (e.g. <span class="mono">s.</span> → SHIPMENT's columns). Works for CTEs and inline views too.</span>
+        <span>JOIN␣</span><span>suggests tables that link to the ones already in the query, with the ON condition filled in.</span>
+        <span>ON␣</span><span>suggests the join condition between the table you just joined and the others.</span>
+        <span>Ctrl+Space</span><span>suggestions anywhere: columns, tables, keywords, functions. Typing part of a name also matches the middle (<span class="mono">cost</span> → TOTAL_ACTUAL_COST).</span>
+        <span>Ctrl+Enter</span><span>run the selection, or the statement under the cursor (statements separated by <span class="mono">;</span>).</span>
+        <span>Ctrl+Alt+Enter</span><span>run all statements in the tab — each result gets its own result tab.</span>
+        <span>Tabs</span><span>+ adds a query tab · double-click a tab to rename it · middle-click or × closes it. Tabs are kept when you close the browser.</span>
+        <span>Ctrl+Shift+Enter</span><span>check SQL: local check against the synced schema + Oracle parse with WHERE 1=0 (no data read).</span>
+        <span>Shift+Alt+F</span><span>format the selection or everything.</span>
+        <span>Ctrl+/</span><span>comment / uncomment lines.</span>
+      </div></div>
+      <div class="row" style="margin-top:10px;align-items:center">
+        <label class="inline">Max rows <input type="number" id="maxRows" value="500" min="1" max="250000" style="width:100px"></label>
+        <button class="btn" id="btnExport" disabled>Export CSV</button>
+        <input type="text" id="resFilter" placeholder="Filter results…" style="flex:1;min-width:160px">
+        <span class="small muted" id="runInfo"></span>
+      </div>
+      <div class="small muted" style="margin-top:6px">Read-only: only SELECT / WITH. Give expressions an alias (<span class="mono">COUNT(*) AS CNT</span>) and avoid duplicate column names — OTM returns columns as XML attributes.</div>
+      <div id="qMsg"></div>
+      <div id="edIssues" class="ed-issues"></div>
+      <div id="diagPanel" class="diag" style="display:none"></div>
+    </div>
+    <div class="card sqside" id="sqSide">
+      <div class="sqtabs"><button data-sq="saved" class="on">★ Saved</button><button data-sq="hist">History</button></div>
+      <div id="sqSaved">
+        <div class="row" style="gap:6px;flex-wrap:nowrap"><input type="text" id="svSearch" placeholder="Search saved…" style="flex:1;min-width:0"><button class="btn small primary" id="svSaveCur" title="Save the SQL in this tab (Ctrl+S) · Shift+Ctrl+S = save as new">☆ Save</button></div>
+        <div id="svMsg"></div>
+        <div class="svlist" id="svList"></div>
+        <div class="svfoot small"><a href="#" id="svExport" title="Download all saved queries as a file (to share or back up)">Export</a> · <a href="#" id="svImport" title="Add queries from an exported file">Import</a><input type="file" id="svFile" accept=".json" hidden></div>
+      </div>
+      <div id="sqHist" style="display:none"><div class="hist" id="history"><div class="muted">No queries yet</div></div></div>
+    </div>
+  </div>
+  <div class="card"><div class="rtabs" id="resTabs" style="display:none"></div><div class="res-wrap" id="resWrap"><div class="muted" style="padding:14px">Results appear here.</div></div></div>
+</section>
+
+<!-- ============================ SCHEMA ============================ -->
+<section class="tab" id="tab-schema">
+  <div class="card">
+    <h2>Relationship data in use</h2>
+    <div class="stats" id="schemaStats"></div>
+  </div>
+  <div class="card" id="baseCard">
+    <h2>Schema base</h2>
+    <p class="small muted" style="margin-top:0">The tool starts from the schema <b>built into otm_explorer.py</b>. A sync saves a fresh copy next to the script (<span class="mono">otm_schema_cache.json</span>) that overrides the built-in one until you revert.</p>
+    <div class="basebox" id="baseInfo"><span class="k">Loading…</span><span></span></div>
+    <div class="row">
+      <button class="btn primary" id="btnEmbed">Build current schema into this file</button>
+      <button class="btn" id="btnRevert">Revert to built-in schema</button>
+      <button class="btn" id="btnDlPy">Download a copy with this schema</button>
+    </div>
+    <div id="baseMsg"></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h2>1 · Sync from your OTM instance</h2>
+      <p class="small muted" style="margin-top:0">Reads real foreign keys from the Oracle data dictionary, then adds links inferred from OTM's <span class="mono">X_GID → table X</span> naming rule for anything without a foreign key.</p>
+      <div class="row">
+        <label>Schema owner<input type="text" id="owner" value="GLOGOWNER" style="width:150px"></label>
+        <label class="inline"><input type="checkbox" id="syncFk" checked> Foreign keys</label>
+        <label class="inline"><input type="checkbox" id="syncInfer" checked> Infer from _GID columns</label>
+        <label class="inline" title="Reads every column of every table so the SQL editor can autocomplete them. Bigger download (a few MB), takes ~1 minute."><input type="checkbox" id="syncCols" checked> All columns (for autocomplete)</label>
+        <label class="inline"><input type="checkbox" id="syncKeepBuiltin" checked> Keep built-in links</label>
+        <button class="btn primary" id="btnSync">Sync now</button>
+      </div>
+      <div class="log" id="syncLog" style="margin-top:10px;display:none"></div>
+      <details style="margin-top:12px"><summary>See / copy the SQL used (run it yourself and import the result)</summary>
+        <pre class="sql" id="syncSql" style="margin-top:8px"></pre></details>
+    </div>
+    <div class="card">
+      <h2>2 · Import a file</h2>
+      <p class="small muted" style="margin-top:0">CSV / TSV, or the "xls" export from SQL Developer / Toad. Needs columns <span class="mono">CHILD_TABLE, CHILD_COLUMN, PARENT_TABLE, PARENT_COLUMN</span> (optional <span class="mono">CONSTRAINT_NAME</span>).</p>
+      <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xls">
+      <h3>3 · Built-in starter pack</h3>
+      <p class="small muted" style="margin-top:0">~70 core OTM joins (orders, shipments, stops, ship units, equipment, rates, invoices, vouchers, ref nums, statuses). Loaded automatically until you sync.</p>
+      <div class="row"><button class="btn" id="btnBuiltin">Reload built-in pack</button><button class="btn" id="btnClear">Clear everything</button></div>
+      <div id="schemaMsg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ CONNECT ============================ -->
+<section class="tab" id="tab-connect">
+  <div class="grid2" style="grid-template-columns:300px minmax(0,760px)">
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Environments</h2><button class="btn small" id="pNew">+ New</button></div>
+      <div class="plist" id="pList"></div>
+      <p class="small muted" style="margin-bottom:0">Passwords are never saved. The helper keeps each one in memory until you stop it, so switching back to an environment is one click (header menu).</p>
+      <p class="small muted" style="margin-bottom:0">All environments share one synced schema — DEV, TEST and PROD normally run the same OTM version.</p>
+    </div>
+    <div class="card">
+      <h2 id="pTitle">Connect to OTM</h2>
+      <p class="small muted" style="margin-top:0">Queries go through OTM's DB.XML servlet with Basic Auth. Your password stays in the memory of the small helper running on your computer — it is never saved to disk and is forgotten when you stop the helper.</p>
+      <div class="row">
+        <label style="flex:1;min-width:180px">Name<input type="text" id="pName" placeholder="e.g. Production"></label>
+        <label>Environment<select id="pEnv"><option>DEV</option><option>TEST</option><option>UAT</option><option>PROD</option><option>OTHER</option></select></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label style="flex:1;min-width:320px">OTM URL<input type="text" id="cUrl" placeholder="https://otmgtm-xxxx.otmgtm.region.ocs.oraclecloud.com"></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label>User (DOMAIN.USER)<input type="text" id="cUser" placeholder="MYDOMAIN.ADMIN"></label>
+        <label>Password<input type="password" id="cPass"></label>
+        <button class="btn primary" id="btnConnect">Connect &amp; test</button>
+        <button class="btn" id="pUse" style="display:none">Use this environment</button>
+        <button class="btn" id="btnDisconnect">Disconnect</button>
+      </div>
+      <details style="margin-top:12px"><summary>Advanced</summary>
+        <div class="row" style="margin-top:8px">
+          <label style="flex:1">Servlet path<input type="text" id="cServlet" value="/GC3/glog.integration.servlet.DBXMLServlet?command=xmlExport"></label>
+          <label class="inline"><input type="checkbox" id="cInsecure"> Skip TLS certificate check (on-prem self-signed only)</label>
+        </div>
+      </details>
+      <div class="row" style="margin-top:12px"><button class="btn small" id="pSave">Save changes</button><button class="btn small" id="pDel">Delete environment</button></div>
+      <div id="cMsg"></div>
+    </div>
+  </div>
+</section>
+
+<datalist id="tableList"></datalist>
+<div id="svModal" class="modal" style="display:none"></div>
+<div id="prmModal" class="modal" style="display:none"></div>
+<div id="recModal" class="modal" style="display:none"><div class="modal-box">
+  <div class="modal-h"><h2 style="margin:0">📚 Query recipes</h2><span class="small muted">Pick a pattern, fill the blanks, get a ready multi-step query you can keep editing.</span><span class="sp"></span><span class="rb" id="recClose" style="font-size:18px">✕</span></div>
+  <div class="modal-b"><div id="recList"></div><div id="recForm"></div></div>
+</div></div>
+</main>
+<footer class="appfoot">OTM Schema Explorer v__VERSION__ · <b>Unofficial tool</b> — not affiliated with or endorsed by Oracle. Oracle, Oracle Transportation Management and OTM are trademarks of Oracle and/or its affiliates. · MIT licence · <a href="https://github.com/Omar-Mosbah/otm-schema-explorer" target="_blank" rel="noopener noreferrer">GitHub</a></footer>
+
+<!--VENDOR_JS-->
+<script>
+const TOKEN = "__API_TOKEN__";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const msg = (el, text, kind="info") => { $(el).innerHTML = text ? `<div class="msg ${kind}">${esc(text)}</div>` : ""; };
+
+async function api(path, body, signal) {
+  if (body && /^\/api\/(query|check)$/.test(path) && !body.profile && window.CUR_PID) body = Object.assign({profile: CUR_PID}, body);
+  const r = await fetch(path, {method: body ? "POST" : "GET",
+    headers: {"Content-Type": "application/json", "X-Token": TOKEN},
+    body: body ? JSON.stringify(body) : undefined, signal});
+  return r.json();
+}
+let CONNECTED = false;
+
+/* ---------------------------------------------------------------- tabs */
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+function showTab(t) {
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.tab === t));
+  document.querySelectorAll("section.tab").forEach(s => s.classList.toggle("active", s.id === "tab-" + t));
+  if (t === "design") { renderTableList(); render(); renderSteps(); }
+  if (t === "query" && window.ED) setTimeout(() => { ED.refresh(); ED.focus(); }, 0);
+  if (t === "schema") loadBaseInfo();
+  if (t === "r360") r360Shown();
+}
+
+/* ---------------------------------------------------------------- built-in pack */
+// CHILD.COL>PARENT.COL  (core OTM relationships; verify against your instance by syncing)
+const BUILTIN = `
+ORDER_RELEASE.SOURCE_LOCATION_GID>LOCATION.LOCATION_GID
+ORDER_RELEASE.DEST_LOCATION_GID>LOCATION.LOCATION_GID
+ORDER_RELEASE.ORDER_BASE_GID>OB_ORDER_BASE.ORDER_BASE_GID
+ORDER_RELEASE.ORDER_RELEASE_TYPE_GID>ORDER_RELEASE_TYPE.ORDER_RELEASE_TYPE_GID
+ORDER_RELEASE_LINE.ORDER_RELEASE_GID>ORDER_RELEASE.ORDER_RELEASE_GID
+ORDER_RELEASE_LINE.PACKAGED_ITEM_GID>PACKAGED_ITEM.PACKAGED_ITEM_GID
+PACKAGED_ITEM.ITEM_GID>ITEM.ITEM_GID
+ORDER_RELEASE_REFNUM.ORDER_RELEASE_GID>ORDER_RELEASE.ORDER_RELEASE_GID
+ORDER_RELEASE_REFNUM.ORDER_RELEASE_REFNUM_QUAL_GID>ORDER_RELEASE_REFNUM_QUAL.ORDER_RELEASE_REFNUM_QUAL_GID
+ORDER_RELEASE_STATUS.ORDER_RELEASE_GID>ORDER_RELEASE.ORDER_RELEASE_GID
+ORDER_RELEASE_STATUS.STATUS_TYPE_GID>STATUS_TYPE.STATUS_TYPE_GID
+ORDER_RELEASE_STATUS.STATUS_VALUE_GID>STATUS_VALUE.STATUS_VALUE_GID
+ORDER_RELEASE_REMARK.ORDER_RELEASE_GID>ORDER_RELEASE.ORDER_RELEASE_GID
+ORDER_RELEASE_INV_PARTY.ORDER_RELEASE_GID>ORDER_RELEASE.ORDER_RELEASE_GID
+OB_LINE.ORDER_BASE_GID>OB_ORDER_BASE.ORDER_BASE_GID
+OB_ORDER_BASE.SOURCE_LOCATION_GID>LOCATION.LOCATION_GID
+OB_ORDER_BASE.DEST_LOCATION_GID>LOCATION.LOCATION_GID
+ORDER_MOVEMENT.ORDER_RELEASE_GID>ORDER_RELEASE.ORDER_RELEASE_GID
+ORDER_MOVEMENT.SOURCE_LOCATION_GID>LOCATION.LOCATION_GID
+ORDER_MOVEMENT.DEST_LOCATION_GID>LOCATION.LOCATION_GID
+VIEW_SHIPMENT_ORDER_RELEASE.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+VIEW_SHIPMENT_ORDER_RELEASE.ORDER_RELEASE_GID>ORDER_RELEASE.ORDER_RELEASE_GID
+SHIPMENT.SOURCE_LOCATION_GID>LOCATION.LOCATION_GID
+SHIPMENT.DEST_LOCATION_GID>LOCATION.LOCATION_GID
+SHIPMENT.SERVPROV_GID>SERVPROV.SERVPROV_GID
+SHIPMENT.RATE_OFFERING_GID>RATE_OFFERING.RATE_OFFERING_GID
+SHIPMENT.RATE_GEO_GID>RATE_GEO.RATE_GEO_GID
+SHIPMENT.TRANSPORT_MODE_GID>TRANSPORT_MODE.TRANSPORT_MODE_GID
+SHIPMENT.FIRST_EQUIPMENT_GROUP_GID>EQUIPMENT_GROUP.EQUIPMENT_GROUP_GID
+SHIPMENT_STOP.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+SHIPMENT_STOP.LOCATION_GID>LOCATION.LOCATION_GID
+SHIPMENT_STOP_D.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+SHIPMENT_STOP_D.S_SHIP_UNIT_GID>S_SHIP_UNIT.S_SHIP_UNIT_GID
+SHIPMENT_STOP_REMARK.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+S_SHIP_UNIT_LINE.S_SHIP_UNIT_GID>S_SHIP_UNIT.S_SHIP_UNIT_GID
+S_SHIP_UNIT_LINE.ORDER_RELEASE_GID>ORDER_RELEASE.ORDER_RELEASE_GID
+SHIPMENT_S_EQUIPMENT_JOIN.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+SHIPMENT_S_EQUIPMENT_JOIN.S_EQUIPMENT_GID>S_EQUIPMENT.S_EQUIPMENT_GID
+S_EQUIPMENT.EQUIPMENT_GROUP_GID>EQUIPMENT_GROUP.EQUIPMENT_GROUP_GID
+S_EQUIPMENT_S_SHIP_UNIT_JOIN.S_EQUIPMENT_GID>S_EQUIPMENT.S_EQUIPMENT_GID
+S_EQUIPMENT_S_SHIP_UNIT_JOIN.S_SHIP_UNIT_GID>S_SHIP_UNIT.S_SHIP_UNIT_GID
+SHIPMENT_REFNUM.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+SHIPMENT_REFNUM.SHIPMENT_REFNUM_QUAL_GID>SHIPMENT_REFNUM_QUAL.SHIPMENT_REFNUM_QUAL_GID
+SHIPMENT_STATUS.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+SHIPMENT_STATUS.STATUS_TYPE_GID>STATUS_TYPE.STATUS_TYPE_GID
+SHIPMENT_STATUS.STATUS_VALUE_GID>STATUS_VALUE.STATUS_VALUE_GID
+STATUS_VALUE.STATUS_TYPE_GID>STATUS_TYPE.STATUS_TYPE_GID
+SHIPMENT_REMARK.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+SHIPMENT_INVOLVED_PARTY.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+SHIPMENT_INVOLVED_PARTY.INVOLVED_PARTY_CONTACT_GID>CONTACT.CONTACT_GID
+SHIPMENT_COST.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+SHIPMENT_ACCESSORIAL.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+SHIPMENT_GROUP_D.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+SHIPMENT_GROUP_D.SHIPMENT_GROUP_GID>SHIPMENT_GROUP.SHIPMENT_GROUP_GID
+SERVPROV.SERVPROV_GID>LOCATION.LOCATION_GID
+RATE_OFFERING.SERVPROV_GID>SERVPROV.SERVPROV_GID
+RATE_OFFERING.TRANSPORT_MODE_GID>TRANSPORT_MODE.TRANSPORT_MODE_GID
+RATE_GEO.RATE_OFFERING_GID>RATE_OFFERING.RATE_OFFERING_GID
+RATE_GEO_COST_GROUP.RATE_GEO_GID>RATE_GEO.RATE_GEO_GID
+RATE_GEO_COST.RATE_GEO_COST_GROUP_GID>RATE_GEO_COST_GROUP.RATE_GEO_COST_GROUP_GID
+RATE_GEO_ACCESSORIAL.RATE_GEO_GID>RATE_GEO.RATE_GEO_GID
+INVOICE_SHIPMENT.INVOICE_GID>INVOICE.INVOICE_GID
+INVOICE_SHIPMENT.SHIPMENT_GID>SHIPMENT.SHIPMENT_GID
+INVOICE_LINEITEM.INVOICE_GID>INVOICE.INVOICE_GID
+INVOICE_REFNUM.INVOICE_GID>INVOICE.INVOICE_GID
+INVOICE_STATUS.INVOICE_GID>INVOICE.INVOICE_GID
+INVOICE.SERVPROV_GID>SERVPROV.SERVPROV_GID
+VOUCHER.INVOICE_GID>INVOICE.INVOICE_GID
+LOCATION.CORPORATION_GID>CORPORATION.CORPORATION_GID
+LOCATION_ADDRESS.LOCATION_GID>LOCATION.LOCATION_GID
+LOCATION_REFNUM.LOCATION_GID>LOCATION.LOCATION_GID
+LOCATION_ROLE_PROFILE.LOCATION_GID>LOCATION.LOCATION_GID
+CONTACT.LOCATION_GID>LOCATION.LOCATION_GID
+`.trim().split("\n").map(l => {
+  const [c, p] = l.split(">"); const [ct, cc] = c.split("."); const [pt, pc] = p.split(".");
+  return {c: ct, cc: [cc], p: pt, pc: [pc], src: "builtin", name: ""};
+});
+
+/* ---------------------------------------------------------------- schema store */
+let SCHEMA = {edges: [], columns: {}, meta: {}};   // columns: table -> [[name,type,nullable]]
+let ADJ = new Map();     // table -> [edge index]
+let TABLESET = new Set();
+let DEGREE = new Map();
+
+function rebuild() {
+  // drop exact duplicates (same child cols -> same parent), prefer fk > import > builtin > inferred
+  const rank = {fk: 0, import: 1, builtin: 2, inferred: 3};
+  const best = new Map();
+  for (const e of SCHEMA.edges) {
+    const k = e.c + "|" + e.cc.join(",") + "|" + e.p + "|" + e.pc.join(",");
+    if (!best.has(k) || rank[e.src] < rank[best.get(k).src]) best.set(k, e);
+  }
+  SCHEMA.edges = [...best.values()];
+  ADJ = new Map(); DEGREE = new Map();
+  SCHEMA.edges.forEach((e, i) => {
+    for (const t of [e.c, e.p]) { if (!ADJ.has(t)) ADJ.set(t, []); }
+    ADJ.get(e.c).push(i); if (e.p !== e.c) ADJ.get(e.p).push(i);
+  });
+  if ($("#tab-design").classList.contains("active")) renderTableList();
+  for (const [t, l] of ADJ) DEGREE.set(t, new Set(l.map(i => SCHEMA.edges[i].c === t ? SCHEMA.edges[i].p : SCHEMA.edges[i].c)).size);
+  const tables = new Set([...ADJ.keys(), ...Object.keys(SCHEMA.columns), ...(SCHEMA.tables || [])]); TABLESET = tables;
+  $("#tableList").innerHTML = [...tables].sort().map(t => `<option value="${esc(t)}">`).join("");
+  const by = {fk: 0, builtin: 0, import: 0, inferred: 0};
+  SCHEMA.edges.forEach(e => by[e.src]++);
+  $("#hdrStats").textContent = `${tables.size.toLocaleString()} tables · ${SCHEMA.edges.length.toLocaleString()} links`;
+  $("#schemaStats").innerHTML = [
+    ["Tables", tables.size], ["Real foreign keys", by.fk], ["Inferred", by.inferred],
+    ["Built-in", by.builtin], ["Imported", by.import], ["Tables with columns", Object.keys(SCHEMA.columns || {}).length]
+  ].map(([l, n]) => `<div class="stat-box"><div class="n">${n.toLocaleString()}</div><div class="l">${l}</div></div>`).join("")
+   + (SCHEMA.meta.source ? `<div class="small muted" style="align-self:center">Last loaded: ${esc(SCHEMA.meta.source)}</div>` : "");
+  if (typeof edSchemaChanged === "function") edSchemaChanged();
+}
+async function saveSchema() { try { await api("/api/schema-cache", SCHEMA); } catch (e) {} }
+function setEdges(edges, source, replace = true) {
+  SCHEMA.edges = replace ? edges : SCHEMA.edges.concat(edges);
+  SCHEMA.meta = {source: source + " · " + new Date().toLocaleString()};
+  rebuild(); saveSchema();
+}
+
+/* ---------------------------------------------------------------- inference */
+function inferEdges(gidRows) {  // gidRows: [table, column]
+  const byTable = new Map();
+  for (const [t, c] of gidRows) { if (!byTable.has(t)) byTable.set(t, new Set()); byTable.get(t).add(c); }
+  const pkTables = new Set([...byTable].filter(([t, cols]) => cols.has(t + "_GID")).map(([t]) => t));
+  const out = [];
+  for (const [t, cols] of byTable) for (const c of cols) {
+    if (c === t + "_GID") continue;
+    const base = c.slice(0, -4), parts = base.split("_");
+    let target = null;
+    for (let i = 0; i < parts.length; i++) {          // longest suffix first
+      const cand = parts.slice(i).join("_");
+      if (pkTables.has(cand)) { target = cand; break; }
+    }
+    if (target) out.push({c: t, cc: [c], p: target, pc: [target + "_GID"], src: "inferred", name: ""});
+  }
+  return out;
+}
+
+/* ---------------------------------------------------------------- sync */
+function q(s) { return "'" + s.replace(/'/g, "''") + "'"; }
+const CHUNKS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").concat(["#"]);
+function chunkCond(col, ch) { return ch === "#" ? `NOT REGEXP_LIKE(${col}, '^[A-Z]')` : `${col} LIKE '${ch}%'`; }
+function syncSql(owner, ch) {
+  const oc = owner ? `c.owner = ${q(owner)}` : "1 = 1", o = owner ? `owner = ${q(owner)}` : "1 = 1";
+  const cc = ch ? `\n  AND ${chunkCond("c.table_name", ch)}` : "", tc = ch ? `\n  AND ${chunkCond("table_name", ch)}` : "", ocn = ch ? `\n  AND ${chunkCond("object_name", ch)}` : "";
+  return {
+    owners: `SELECT owner AS O, COUNT(*) AS N FROM all_objects
+WHERE object_name IN ('SHIPMENT','ORDER_RELEASE','LOCATION','INVOICE') AND object_type IN ('TABLE','VIEW')
+GROUP BY owner ORDER BY 2 DESC`,
+    synOwners: `SELECT table_owner AS O, COUNT(*) AS N FROM all_synonyms
+WHERE synonym_name IN ('SHIPMENT','ORDER_RELEASE','LOCATION','INVOICE')
+GROUP BY table_owner ORDER BY 2 DESC`,
+    tables: `SELECT object_name AS T, object_type AS Y
+FROM all_objects
+WHERE ${o} AND object_type IN ('TABLE','VIEW')
+  AND object_name NOT LIKE 'BIN$%'${ocn}`,
+    fk: `SELECT c.constraint_name AS CONSTRAINT_NAME, c.table_name AS CHILD_TABLE,
+       cc.column_name AS CHILD_COLUMN, p.table_name AS PARENT_TABLE,
+       pc.column_name AS PARENT_COLUMN, cc.position AS POS
+FROM all_constraints c
+JOIN all_cons_columns cc ON cc.owner = c.owner AND cc.constraint_name = c.constraint_name
+JOIN all_constraints p ON p.owner = c.r_owner AND p.constraint_name = c.r_constraint_name
+JOIN all_cons_columns pc ON pc.owner = p.owner AND pc.constraint_name = p.constraint_name
+                        AND pc.position = cc.position
+WHERE c.constraint_type = 'R' AND ${oc}${cc}`,
+    gid: `SELECT table_name AS T, column_name AS C
+FROM all_tab_columns
+WHERE ${o} AND column_name LIKE '%\\_GID' ESCAPE '\\'
+  AND table_name NOT LIKE 'BIN$%'${tc}`,
+    cols: `SELECT table_name AS T, column_name AS C,
+       data_type || CASE WHEN data_type LIKE '%CHAR%' THEN '(' || char_length || ')' END AS Y,
+       nullable AS N, column_id AS I
+FROM all_tab_columns
+WHERE ${o} AND table_name NOT LIKE 'BIN$%'${tc}`
+  };
+}
+function renderSyncSql() { const s = syncSql($("#owner").value.trim().toUpperCase()); $("#syncSql").innerHTML = hl("-- 1. find which schema owns the OTM tables\n" + s.owners + ";\n\n-- 2. all tables and views\n" + s.tables + ";\n\n-- 3. foreign keys\n" + s.fk + ";\n\n-- 4. _GID columns (naming-rule inference)\n" + s.gid + ";\n\n-- 5. every column (for the SQL editor's autocomplete)\n" + s.cols + ";"); }
+$("#owner").oninput = renderSyncSql;
+
+function fkRowsToEdges(cols, rows, src) {
+  const ix = n => cols.indexOf(n);
+  const [iN, iCT, iCC, iPT, iPC, iPos] = ["CONSTRAINT_NAME", "CHILD_TABLE", "CHILD_COLUMN", "PARENT_TABLE", "PARENT_COLUMN", "POS"].map(ix);
+  if (iCT < 0 || iCC < 0 || iPT < 0 || iPC < 0) throw new Error("Missing columns. Need CHILD_TABLE, CHILD_COLUMN, PARENT_TABLE, PARENT_COLUMN. Found: " + cols.join(", "));
+  const groups = new Map();
+  rows.forEach((r, n) => {
+    const key = iN >= 0 && r[iN] ? r[iCT] + "|" + r[iN] : "row" + n;
+    if (!groups.has(key)) groups.set(key, {c: r[iCT], p: r[iPT], parts: [], name: iN >= 0 ? r[iN] || "" : ""});
+    groups.get(key).parts.push([+(iPos >= 0 ? r[iPos] : 0), r[iCC], r[iPC]]);
+  });
+  return [...groups.values()].map(g => {
+    g.parts.sort((a, b) => a[0] - b[0]);
+    return {c: g.c, cc: g.parts.map(x => x[1]), p: g.p, pc: g.parts.map(x => x[2]), src, name: g.name};
+  });
+}
+
+$("#btnSync").onclick = async () => {
+  if (!CONNECTED) return msg("#schemaMsg", "Connect to OTM first (Connection tab).", "err");
+  let owner = $("#owner").value.trim().toUpperCase();
+  const log = $("#syncLog"); log.style.display = "block"; log.textContent = "";
+  const L = t => { log.textContent += t + "\n"; log.scrollTop = 1e9; };
+  const run = async (sql) => { const r = await api("/api/query", {sql, maxRows: 250000}); if (r.error) throw new Error(r.error); return r; };
+  // run one query per first letter (A..Z, other) so no single response is huge; 4 at a time
+  const chunked = async (kind, label) => {
+    const out = []; let done = 0, i = 0;
+    const worker = async () => { while (i < CHUNKS.length) { const ch = CHUNKS[i++]; const r = await run(syncSql(owner, ch)[kind]); out.push(...r.rows.map(row => { const o = {}; r.columns.forEach((c, k) => o[c] = row[k]); return o; })); done++; } };
+    L(`${label}…`);
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    return out;
+  };
+  $("#btnSync").disabled = true;
+  try {
+    // 0. which owner actually holds the OTM tables?
+    L("Finding the schema that owns SHIPMENT / ORDER_RELEASE / LOCATION / INVOICE…");
+    let det = (await run(syncSql("").owners)).rows;
+    if (!det.length) { det = (await run(syncSql("").synOwners)).rows; if (det.length) L("  (found through synonyms)"); }
+    if (det.length) {
+      L("  candidates: " + det.map(r => `${r[0]} (${r[1]}/4)`).join(", "));
+      if (!owner || !det.some(r => r[0] === owner)) { L(`  using ${det[0][0]}` + (owner ? ` instead of ${owner} (not found)` : "")); owner = det[0][0]; $("#owner").value = owner; }
+    } else L("  Could not see the OTM tables in the data dictionary with this user. Trying owner " + (owner || "(any)") + " anyway.");
+    localStorage.setItem("owner", owner); renderSyncSql();
+
+    // 1. every table and view
+    const objs = await chunked("tables", "Reading all tables and views");
+    SCHEMA.tables = [...new Set(objs.map(o => o.T))].sort();
+    L(`  ${SCHEMA.tables.length.toLocaleString()} tables/views (${objs.filter(o => o.Y === "VIEW").length} views)`);
+
+    let edges = [];
+    if ($("#syncFk").checked) {
+      const rows = await chunked("fk", "Reading foreign keys");
+      const cols = ["CONSTRAINT_NAME", "CHILD_TABLE", "CHILD_COLUMN", "PARENT_TABLE", "PARENT_COLUMN", "POS"];
+      edges = rows.length ? fkRowsToEdges(cols, rows.map(o => cols.map(c => o[c])), "fk") : [];
+      L(`  ${edges.length.toLocaleString()} foreign keys`);
+      if (!edges.length) L("  None visible — OTM Cloud often hides constraints. Relying on inference.");
+    }
+    let gidRows = null;
+    if ($("#syncCols").checked) {
+      const rows = await chunked("cols", "Reading every column (for autocomplete)");
+      const by = {};
+      for (const o of rows) (by[o.T] = by[o.T] || []).push([+o.I || 0, o.C, o.Y || "", o.N || ""]);
+      const colMap = {};
+      for (const t of Object.keys(by).sort()) colMap[t] = by[t].sort((a, b) => a[0] - b[0]).map(x => [x[1], x[2], x[3]]);
+      SCHEMA.columns = colMap;
+      L(`  ${rows.length.toLocaleString()} columns across ${Object.keys(colMap).length.toLocaleString()} tables/views`);
+      gidRows = rows.filter(o => /_GID$/.test(o.C));
+    }
+    if ($("#syncInfer").checked) {
+      const rows = gidRows || await chunked("gid", "Reading _GID columns");
+      const inf = inferEdges(rows.map(o => [o.T, o.C]));
+      L(`  ${rows.length.toLocaleString()} _GID columns → ${inf.length.toLocaleString()} inferred links`);
+      edges = edges.concat(inf);
+    }
+    if ($("#syncKeepBuiltin").checked) {
+      const known = new Set([...SCHEMA.tables, ...edges.flatMap(e => [e.c, e.p])]);
+      const keep = BUILTIN.filter(e => known.has(e.c) && known.has(e.p)).map(e => ({...e}));
+      L(`Keeping ${keep.length} built-in links between tables found in your instance`);
+      edges = edges.concat(keep);
+    }
+    if (!edges.length && !SCHEMA.tables.length) throw new Error("Nothing came back. This user may not be able to read the Oracle data dictionary (ALL_OBJECTS / ALL_TAB_COLUMNS).");
+    setEdges(edges, `Synced from OTM (owner ${owner || "any"})`);
+    const linked = new Set(edges.flatMap(e => [e.c, e.p]));
+    L(`Done. ${SCHEMA.tables.length.toLocaleString()} tables, ${SCHEMA.edges.length.toLocaleString()} links; ${SCHEMA.tables.filter(t => !linked.has(t)).length.toLocaleString()} tables have no detected links (still listed, join them manually).`);
+    await saveSchema();
+    msg("#schemaMsg", "Schema synced and cached on your computer. To make it the tool's base, click “Build current schema into this file” above.", "ok");
+    loadBaseInfo();
+  } catch (e) { L("ERROR: " + e.message); msg("#schemaMsg", e.message, "err"); }
+  $("#btnSync").disabled = false;
+};
+
+/* ---------------------------------------------------------------- import */
+function parseDelimited(text) {
+  const lines = text.replace(/\r/g, "").split("\n").filter(l => l.trim());
+  const d = lines[0].includes("\t") ? "\t" : (lines[0].includes(";") && !lines[0].includes(",") ? ";" : ",");
+  const split = l => {
+    if (d === "\t") return l.split("\t").map(x => x.trim().replace(/^"|"$/g, ""));
+    const out = []; let cur = "", qd = false;
+    for (let i = 0; i < l.length; i++) {
+      const ch = l[i];
+      if (qd) { if (ch === '"' && l[i + 1] === '"') { cur += '"'; i++; } else if (ch === '"') qd = false; else cur += ch; }
+      else if (ch === '"') qd = true; else if (ch === d) { out.push(cur.trim()); cur = ""; } else cur += ch;
+    }
+    out.push(cur.trim()); return out;
+  };
+  const cols = split(lines[0]).map(c => c.toUpperCase());
+  return {cols, rows: lines.slice(1).map(split)};
+}
+$("#fileInput").onchange = async ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  const buf = new Uint8Array(await f.arrayBuffer());
+  if (buf[0] === 0x50 && buf[1] === 0x4b) return msg("#schemaMsg", "This is a real Excel (.xlsx) workbook. Save it as CSV and import that.", "err");
+  let text;
+  const utf16 = (buf[0] === 0xff && buf[1] === 0xfe) || (buf.length > 3 && buf[1] === 0 && buf[3] === 0);
+  text = new TextDecoder(utf16 ? "utf-16le" : "utf-8").decode(buf).replace(/^﻿/, "");
+  try {
+    const {cols, rows} = parseDelimited(text);
+    const edges = fkRowsToEdges(cols, rows, "import");
+    const replace = confirm(`Found ${edges.length} relationships in ${f.name}.\n\nOK = replace current data\nCancel = add to current data`);
+    setEdges(edges, "Imported " + f.name, replace);
+    const tables = new Set(edges.flatMap(e => [e.c, e.p]));
+    const otmish = ["SHIPMENT", "ORDER_RELEASE", "LOCATION"].some(t => tables.has(t));
+    msg("#schemaMsg", `Imported ${edges.length} relationships across ${tables.size} tables.` +
+      (otmish ? "" : "\nNote: this file has no core OTM tables (SHIPMENT, ORDER_RELEASE, LOCATION) — it looks like a different schema."), otmish ? "ok" : "info");
+  } catch (e) { msg("#schemaMsg", e.message, "err"); }
+  ev.target.value = "";
+};
+$("#btnBuiltin").onclick = () => { setEdges(BUILTIN.map(e => ({...e})), "Built-in starter pack", !confirm("Add the built-in pack to the current data?\n\nOK = add · Cancel = replace")); msg("#schemaMsg", "Built-in pack loaded.", "ok"); };
+$("#btnClear").onclick = () => { if (confirm("Remove all relationship data?")) { SCHEMA = {edges: [], columns: {}, meta: {}}; rebuild(); saveSchema(); } };
+
+/* ---------------------------------------------------------------- schema base (built-in / local) */
+async function loadSchemaFromHelper() {
+  const cache = await api("/api/schema-cache");
+  if (cache && cache.edges && (cache.edges.length || (cache.tables || []).length)) { SCHEMA = {edges: cache.edges, columns: cache.columns || {}, tables: cache.tables || [], meta: cache.meta || {}}; rebuild(); }
+  else { SCHEMA = {edges: BUILTIN.map(e => ({...e})), columns: {}, meta: {source: "Built-in starter pack"}}; rebuild(); }
+}
+const fmtN = n => (n || 0).toLocaleString();
+const sumLine = x => `${fmtN(x.tables)} tables · ${fmtN(x.links)} links · columns for ${fmtN(x.colTables)} tables`;
+let BASE = null;
+async function loadBaseInfo() {
+  try { BASE = await api("/api/schema-info"); } catch (e) { return; }
+  const b = BASE, rows = [];
+  const using = {local: "Your latest sync (local cache file)", embedded: "Built into otm_explorer.py", starter: "Starter pack (~70 core joins)"}[b.using];
+  rows.push(["In use now", `<b>${esc(using)}</b>`]);
+  rows.push(["Built into this file", b.embedded ? `${sumLine(b.embedded)}<span class="pill">built ${esc(b.embedded.builtInAt || "?")}</span><div class="small muted">${esc(b.embedded.source)}</div>`
+                                                : `<span class="muted">Nothing yet — click “Build current schema into this file”.</span>`]);
+  rows.push(["Local cache", b.local ? (b.local.error ? `<span class="muted">unreadable: ${esc(b.local.error)}</span>` : `${sumLine(b.local)}<span class="pill grey">${new Date(b.local.mtime).toLocaleString()}</span><div class="small muted">${esc(b.local.source)} · overrides the built-in schema</div>`)
+                                    : `<span class="muted">none</span>`]);
+  if (b.embedded && b.local && b.embedded.builtInAt && new Date(b.embedded.builtInAt.replace(" ", "T")).getTime() > b.local.mtime + 60000)
+    rows.push(["", `<span class="small" style="color:var(--amber)">The schema built into the file is newer than your local cache. Click “Revert to built-in schema” to use it.</span>`]);
+  if (!b.writable) rows.push(["", `<span class="small" style="color:var(--amber)">This folder is read-only (${esc(b.folder)}) — move the file somewhere writable to build the schema into it.</span>`]);
+  $("#baseInfo").innerHTML = rows.map(([k, v]) => `<span class="k">${k}</span><span>${v}</span>`).join("");
+  $("#btnEmbed").disabled = !b.writable || b.using === "starter";
+  $("#btnRevert").disabled = !b.local;
+  $("#btnDlPy").disabled = b.using === "starter";
+}
+$("#btnEmbed").onclick = async () => {
+  const n = Object.keys(SCHEMA.columns || {}).length;
+  if (!confirm(`Write the schema in use now (${fmtN(TABLESET.size)} tables, ${fmtN(SCHEMA.edges.length)} links, columns for ${fmtN(n)} tables) into otm_explorer.py?\n\nThe tool will start with it on any computer, even without the cache file. Sync still overrides it.`)) return;
+  msg("#baseMsg", "Writing…", "info");
+  await saveSchema();
+  const r = await api("/api/schema-embed", {});
+  if (r.error) return msg("#baseMsg", r.error, "err");
+  msg("#baseMsg", `Done. ${r.file} now carries this schema (${fmtN(r.kb)} KB). Copy that one file anywhere and it starts with this schema.`, "ok");
+  loadBaseInfo();
+};
+$("#btnRevert").onclick = async () => {
+  if (!confirm("Delete the local cache (otm_schema_cache.json) and go back to the schema built into otm_explorer.py?\n(If nothing is built in, the starter pack is used.)")) return;
+  const r = await api("/api/schema-reset", {});
+  if (r.error) return msg("#baseMsg", r.error, "err");
+  await loadSchemaFromHelper();
+  msg("#baseMsg", r.embedded ? "Back on the built-in schema." : "Local cache removed. Nothing is built in, so the starter pack is in use.", "ok");
+  loadBaseInfo();
+};
+$("#btnDlPy").onclick = async () => {
+  await saveSchema();
+  const r = await fetch("/api/download-py", {headers: {"X-Token": TOKEN}});
+  if ((r.headers.get("Content-Type") || "").includes("json")) { const j = await r.json(); return msg("#baseMsg", j.error || "Download failed", "err"); }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(await r.blob()); a.download = "otm_explorer.py"; a.click();
+  msg("#baseMsg", "Downloaded a copy of otm_explorer.py with the current schema built in — handy for colleagues. Your own file is unchanged.", "ok");
+};
+
+/* ---------------------------------------------------------------- chips */
+function chipBox(boxSel, inputSel, cls, onChange) {
+  const box = $(boxSel), input = $(inputSel); let items = [];
+  const render = () => {
+    box.querySelectorAll(".chip").forEach(c => c.remove());
+    items.forEach((t, i) => {
+      const c = document.createElement("span"); c.className = "chip " + cls;
+      c.innerHTML = `${esc(t)}<b title="remove">×</b>`;
+      c.querySelector("b").onclick = () => { items.splice(i, 1); render(); onChange && onChange(); };
+      box.insertBefore(c, input);
+    });
+  };
+  const add = v => { v = v.trim().toUpperCase(); if (v && !items.includes(v)) { items.push(v); render(); onChange && onChange(); } };
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === "," || e.key === "Tab") { if (input.value.trim()) { e.preventDefault(); input.value.split(/[ ,]+/).forEach(add); input.value = ""; } }
+    else if (e.key === "Backspace" && !input.value && items.length) { items.pop(); render(); onChange && onChange(); }
+  });
+  input.addEventListener("change", () => { if (input.value.trim()) { input.value.split(/[ ,]+/).forEach(add); input.value = ""; } });
+  box.onclick = e => { if (e.target === box) input.focus(); };
+  return {get: () => { if (input.value.trim()) { input.value.split(/[ ,]+/).forEach(add); input.value = ""; } return items.slice(); },
+          set: v => { items = v.slice(); render(); }, add};
+}
+const pathChips = chipBox("#pathChips", "#pathInput", "", null);
+const DEFAULT_AVOID = ["LOCATION", "CURRENCY", "STATUS_TYPE", "STATUS_VALUE", "TRANSPORT_MODE", "COUNTRY_CODE", "TIME_ZONE", "UOM", "CORPORATION", "CONTACT", "GL_USER", "DOMAIN", "REGION", "EQUIPMENT_GROUP"];
+const avoidChips = chipBox("#avoidChips", "#avoidInput", "avoid", () => localStorage.setItem("avoid", JSON.stringify(avoidChips.get())));
+try { avoidChips.set(JSON.parse(localStorage.getItem("avoid")) || DEFAULT_AVOID); } catch (e) { avoidChips.set(DEFAULT_AVOID); }
+
+/* ---------------------------------------------------------------- path finding */
+const W = {fk: 1, import: 1, builtin: 1, inferred: 1.15};
+function globToRe(p) { return new RegExp("^" + p.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".") + "$"); }
+
+// multi-source Dijkstra from a set of tree nodes to target
+function shortest(sources, target, blocked, useInferred) {
+  const dist = new Map(), prev = new Map(), done = new Set();
+  const pq = [];  // small binary heap
+  const push = (d, n) => { pq.push([d, n]); let i = pq.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (pq[p][0] <= pq[i][0]) break; [pq[p], pq[i]] = [pq[i], pq[p]]; i = p; } };
+  const pop = () => { const top = pq[0], last = pq.pop(); if (pq.length) { pq[0] = last; let i = 0; for (;;) { let l = 2 * i + 1, r = l + 1, m = i; if (l < pq.length && pq[l][0] < pq[m][0]) m = l; if (r < pq.length && pq[r][0] < pq[m][0]) m = r; if (m === i) break; [pq[m], pq[i]] = [pq[i], pq[m]]; i = m; } } return top; };
+  for (const s of sources) { dist.set(s, 0); push(0, s); }
+  while (pq.length) {
+    const [d, u] = pop(); if (done.has(u)) continue; done.add(u);
+    if (u === target) break;
+    if (u !== target && blocked(u) && (!sources.has(u) || sources.size > 1)) continue;   // never pass through hubs
+    for (const ei of ADJ.get(u) || []) {
+      const e = SCHEMA.edges[ei]; if (e.c === e.p) continue;
+      if (!useInferred && e.src === "inferred") continue;
+      const v = e.c === u ? e.p : e.c, nd = d + W[e.src];
+      if (nd < (dist.get(v) ?? Infinity)) { dist.set(v, nd); prev.set(v, [u, ei]); push(nd, v); }
+    }
+  }
+  if (!dist.has(target)) return null;
+  const steps = []; let cur = target;
+  while (!sources.has(cur)) { const [u, ei] = prev.get(cur); steps.unshift({from: u, to: cur, edge: ei}); cur = u; }
+  return steps;
+}
+
+let PATH = null;   // {root, steps:[{from,to,edge}], requested:Set}
+let extraAvoid = new Set();
+
+function findPath() {
+  const wanted = pathChips.get();
+  msg("#pathMsg", "");
+  if (wanted.length < 2) { $("#pathResult").style.display = "none"; return msg("#pathMsg", "Add at least two tables.", "err"); }
+  const missing = wanted.filter(t => !ADJ.has(t));
+  if (missing.length) { $("#pathResult").style.display = "none"; return msg("#pathMsg", `No relationships known for: ${missing.join(", ")}. Check the spelling, or sync/import more schema data.`, "err"); }
+  const req = new Set(wanted);
+  const pats = avoidChips.get().concat([...extraAvoid]).map(globToRe);
+  const autoHub = $("#autoHub").checked, useInf = $("#useInferred").checked;
+  const blocked = t => pats.some(r => r.test(t)) || (autoHub && (DEGREE.get(t) || 0) > 120);
+  // connect "normal" tables first, hub-like ones (LOCATION…) last, so hubs don't become shortcuts
+  const rest = wanted.slice(1).sort((a, b) => blocked(a) - blocked(b));
+  const tree = new Set([wanted[0]]), steps = [];
+  for (const t of rest) {
+    if (tree.has(t)) continue;
+    const s = shortest(tree, t, blocked, useInf);
+    if (!s) { $("#pathResult").style.display = "none"; return msg("#pathMsg", `No route found to ${t} with the current "avoid" list. Remove some avoided tables or allow inferred links.`, "err"); }
+    s.forEach(st => { steps.push(st); tree.add(st.to); });
+  }
+  PATH = {root: wanted[0], steps, requested: req};
+  renderPath();
+  if (extraAvoid.size) msg("#pathMsg", "Also avoiding: " + [...extraAvoid].join(", ") + "  (Clear to reset)", "info");
+}
+
+function alternatives(a, b) {
+  return (ADJ.get(a) || []).filter(i => { const e = SCHEMA.edges[i]; return (e.c === a && e.p === b) || (e.c === b && e.p === a); });
+}
+
+/* ---------------------------------------------------------------- SQL generation */
+const RESERVED = new Set("as at by do if in is of on or to and any all asc for not set row uid end add use desc from into user mode size date file level null table".split(" "));
+function makeAliases(tables) {
+  const used = new Set(), out = {};
+  for (const t of tables) {
+    let a = t.toLowerCase().split(/[_$#]+/).filter(Boolean).map(w => w[0]).join("").slice(0, 4) || "t";
+    if (/^[0-9]/.test(a)) a = "t" + a;
+    let cand = a, n = 2;
+    while (used.has(cand) || RESERVED.has(cand)) cand = a + n++;
+    used.add(cand); out[t] = cand;
+  }
+  return out;
+}
+function onClause(e, newT, oldT, A) {
+  const [nc, oc] = e.c === newT ? [e.cc, e.pc] : [e.pc, e.cc];
+  return nc.map((c, i) => `${A[newT]}.${c} = ${A[oldT]}.${oc[i]}`).join("\n    AND ");
+}
+function genSql() {
+  const order = [PATH.root, ...PATH.steps.map(s => s.to)];
+  const A = makeAliases(order), jt = $("#joinType").value;
+  const sel = [], seenNames = new Set();
+  const addSel = (t, c) => { const name = seenNames.has(c) ? ` AS ${A[t].toUpperCase()}_${c}`.slice(0, 34) : ""; seenNames.add(c); sel.push(`${A[t]}.${c}${name}`); };
+  for (const t of order) {
+    const own = t + "_GID";
+    const hasOwn = SCHEMA.edges.some(e => (e.p === t && e.pc.includes(own)) || (e.c === t && e.cc.includes(own))) || (SCHEMA.columns[t] || []).some(c => c[0] === own);
+    if (hasOwn) addSel(t, own);   // link tables without their own _GID add nothing new
+  }
+  if (!sel.length) sel.push(A[PATH.root] + ".*");
+  let sql = `SELECT\n    ${[...new Set(sel)].join(",\n    ")}\nFROM ${PATH.root} ${A[PATH.root]}`;
+  for (const s of PATH.steps) {
+    const e = SCHEMA.edges[s.edge];
+    sql += `\n${jt} ${s.to} ${A[s.to]}\n    ON ${onClause(e, s.to, s.from, A)}` + (e.src === "inferred" ? "   -- inferred link, verify" : "");
+  }
+  const rootKey = A[PATH.root] + "." + PATH.root + "_GID";
+  sql += `\nWHERE 1 = 1\n-- AND ${rootKey} = 'DOMAIN.XID'`;
+  return sql;
+}
+function hl(sql) {
+  return esc(sql).replace(/(--[^\n]*)/g, '<span class="cm">$1</span>')
+    .replace(/\b(SELECT|FROM|WHERE|AND|OR|INNER JOIN|LEFT JOIN|JOIN|ON|AS|ORDER BY|GROUP BY|LIKE|ESCAPE|NOT)\b(?![^<]*<\/span>)/g, '<span class="kw">$1</span>');
+}
+
+/* ---------------------------------------------------------------- path rendering */
+const CW = 7.25, LH = 17;
+const SRC_COLOR = {fk: "var(--green)", builtin: "var(--blue)", import: "var(--violet)", inferred: "var(--amber)"};
+function renderPath() {
+  $("#pathResult").style.display = "block";
+  // hop table
+  $("#hopTable").innerHTML = PATH.steps.map((s, i) => {
+    const alts = alternatives(s.from, s.to);
+    const opts = alts.map(ei => { const e = SCHEMA.edges[ei]; return `<option value="${ei}" ${ei === s.edge ? "selected" : ""}>${esc(e.c + "." + e.cc.join("+") + " → " + e.p + "." + e.pc.join("+"))}${e.src === "inferred" ? " (inferred)" : ""}</option>`; }).join("");
+    const e = SCHEMA.edges[s.edge];
+    return `<tr><td class="mono small">${i + 1}</td><td class="mono small">${esc(s.from)} ⟷ ${esc(s.to)}</td><td>${alts.length > 1 ? `<select data-step="${i}">${opts}</select>` : `<span class="mono small">${esc(e.cc.join("+"))} = ${esc(e.pc.join("+"))}</span>`}</td><td><span class="tag ${e.src}">${e.src}</span></td></tr>`;
+  }).join("");
+  $("#hopTable").querySelectorAll("select").forEach(sel => sel.onchange = () => { PATH.steps[+sel.dataset.step].edge = +sel.value; renderPath(); });
+  $("#sqlOut").innerHTML = hl(genSql());
+
+  // tree layout: depth -> x, leaf order -> y
+  const kids = new Map(), parentOf = new Map(), depth = new Map([[PATH.root, 0]]);
+  for (const s of PATH.steps) { if (!kids.has(s.from)) kids.set(s.from, []); kids.get(s.from).push(s); parentOf.set(s.to, s); depth.set(s.to, depth.get(s.from) + 1); }
+  const nodes = [PATH.root, ...PATH.steps.map(s => s.to)];
+  const colsOf = t => { const set = []; for (const s of PATH.steps) { const e = SCHEMA.edges[s.edge]; if (s.from === t || s.to === t) (e.c === t ? e.cc : e.pc).forEach(c => { if (!set.includes(c)) set.push(c); }); } return set; };
+  const size = {};
+  nodes.forEach(t => { const cols = colsOf(t); size[t] = {w: Math.max(t.length * 7.9, ...cols.map(c => c.length * CW)) + 28, h: 30 + cols.length * LH + 6, cols}; size[t].w = Math.max(t.length * 7.9, ...cols.map(c => c.length * CW + 24)) + 28; });
+  const maxDepth = Math.max(...depth.values());
+  const colW = []; for (let d = 0; d <= maxDepth; d++) colW[d] = Math.max(...nodes.filter(n => depth.get(n) === d).map(n => size[n].w));
+  const colX = [40]; for (let d = 1; d <= maxDepth; d++) colX[d] = colX[d - 1] + colW[d - 1] + 120;
+  const pos = {}; let yCursor = 30;
+  const place = t => {
+    const ch = kids.get(t) || [];
+    if (!ch.length) { pos[t] = {x: colX[depth.get(t)], y: yCursor}; yCursor += size[t].h + 26; return; }
+    ch.forEach(s => place(s.to));
+    const ys = ch.map(s => pos[s.to].y + size[s.to].h / 2);
+    let cy = (Math.min(...ys) + Math.max(...ys)) / 2 - size[t].h / 2;
+    pos[t] = {x: colX[depth.get(t)], y: Math.max(cy, 20)};
+  };
+  place(PATH.root);
+  const W_ = Math.max(...nodes.map(n => pos[n].x + size[n].w)) + 40, H_ = Math.max(yCursor, ...nodes.map(n => pos[n].y + size[n].h)) + 20;
+  let svg = `<svg width="${W_}" height="${H_}" xmlns="http://www.w3.org/2000/svg">`;
+  // edges
+  for (const s of PATH.steps) {
+    const e = SCHEMA.edges[s.edge], a = pos[s.from], b = pos[s.to], sa = size[s.from], sb = size[s.to];
+    const x1 = a.x + sa.w, y1 = a.y + sa.h / 2, x2 = b.x, y2 = b.y + sb.h / 2, mx = (x1 + x2) / 2;
+    const col = SRC_COLOR[e.src];
+    svg += `<path d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}" fill="none" stroke="${col}" stroke-width="2" ${e.src === "inferred" ? 'stroke-dasharray="6 4"' : ""}/>`;
+    svg += `<circle cx="${x1}" cy="${y1}" r="3.5" fill="${col}"/><circle cx="${x2}" cy="${y2}" r="3.5" fill="${col}"/>`;
+  }
+  // nodes
+  for (const t of nodes) {
+    const p = pos[t], s = size[t], req = PATH.requested.has(t), isRoot = t === PATH.root;
+    svg += `<g class="node" data-t="${esc(t)}" transform="translate(${p.x},${p.y})">
+      <rect class="box" width="${s.w}" height="${s.h}" rx="7" fill="#fff" stroke="${req ? "var(--accent)" : "#b9c0cc"}" stroke-width="${req ? 2 : 1.2}"/>
+      <rect width="${s.w}" height="26" rx="7" fill="${req ? "var(--accent)" : "#eef0f4"}"/><rect y="19" width="${s.w}" height="7" fill="${req ? "var(--accent)" : "#eef0f4"}"/>
+      <text x="12" y="17.5" font-size="12.5" font-weight="700" fill="${req ? "#fff" : "#1d2433"}">${esc(t)}</text>
+      ${s.cols.map((c, i) => `<text x="12" y="${44 + i * LH}" font-size="11.5" fill="#475467">🔑 ${esc(c)}</text>`).join("")}
+      ${!req ? `<g class="avoid" data-avoid="${esc(t)}"><title>Avoid ${esc(t)} and re-route</title><circle cx="${s.w - 12}" cy="13" r="8" fill="#fff" stroke="#b9c0cc"/><text x="${s.w - 15.5}" y="17" font-size="11" fill="#8a2416">×</text></g>` : ""}
+      ${isRoot ? `<text x="0" y="-6" font-size="10.5" fill="#667085">FROM</text>` : ""}
+    </g>`;
+  }
+  svg += "</svg>";
+  $("#pathDiagram").innerHTML = svg;
+  $("#pathDiagram").querySelectorAll("[data-avoid]").forEach(g => g.onclick = ev => { ev.stopPropagation(); extraAvoid.add(g.dataset.avoid); findPath(); });
+  $("#pathDiagram").querySelectorAll(".node").forEach(g => g.ondblclick = () => { $("#exInput").value = g.dataset.t; showTab("explore"); explore(); });
+}
+
+$("#btnFind").onclick = () => { extraAvoid = new Set(); findPath(); };
+$("#joinType").onchange = () => PATH && renderPath();
+$("#btnClearPath").onclick = () => { pathChips.set([]); extraAvoid = new Set(); PATH = null; $("#pathResult").style.display = "none"; msg("#pathMsg", ""); };
+document.querySelectorAll("[data-preset]").forEach(b => b.onclick = () => { pathChips.set(b.dataset.preset.split(",")); extraAvoid = new Set(); findPath(); });
+$("#btnCopySql").onclick = () => { navigator.clipboard.writeText(genSql()); $("#btnCopySql").textContent = "Copied"; setTimeout(() => $("#btnCopySql").textContent = "Copy", 1200); };
+$("#btnRunSql").onclick = () => { openSql(genSql(), "Path"); if (CONNECTED) runQuery(); };
+
+/* ---------------------------------------------------------------- explorer */
+function explore() {
+  const t = $("#exInput").value.trim().toUpperCase(); if (!t) return;
+  $("#exInput").value = t; msg("#exMsg", "");
+  if (!TABLESET.has(t)) return msg("#exMsg", `${t} isn't in the schema data. Sync again, or check the name.`, "err");
+  const f = $("#exFilter").value.trim().toUpperCase();
+  const outE = [], inE = [];
+  for (const i of ADJ.get(t) || []) { const e = SCHEMA.edges[i]; if (e.c === t) outE.push(e); if (e.p === t && e.c !== t) inE.push(e); }
+  const match = (e, other) => !f || other.includes(f) || e.cc.join().includes(f);
+  const left = outE.filter(e => match(e, e.p)).sort((a, b) => a.p.localeCompare(b.p));
+  const right = inE.filter(e => match(e, e.c)).sort((a, b) => a.c.localeCompare(b.c));
+  $("#exTitle").textContent = `${t} — points to ${outE.length} · referenced by ${inE.length}`;
+  const rowH = 30, cw = 7.3;
+  const lw = Math.max(200, ...left.map(e => (e.p.length + e.cc.join("+").length + 3) * cw)) + 20;
+  const rw = Math.max(200, ...right.map(e => (e.c.length + e.cc.join("+").length + 3) * cw)) + 20;
+  const cwid = Math.max(180, t.length * 8.5 + 40), gap = 140;
+  const H = Math.max(left.length, right.length, 3) * rowH + 40;
+  const cx = 20 + lw + gap, cy = H / 2;
+  const W_ = cx + cwid + gap + rw + 20;
+  let svg = `<svg width="${W_}" height="${H}" xmlns="http://www.w3.org/2000/svg">`;
+  const lStart = cy - left.length * rowH / 2, rStart = cy - right.length * rowH / 2;
+  left.forEach((e, i) => {
+    const y = lStart + i * rowH + rowH / 2, col = SRC_COLOR[e.src];
+    svg += `<path d="M${20 + lw},${y} C${cx - gap / 2},${y} ${cx - gap / 2},${cy} ${cx},${cy}" fill="none" stroke="${col}" stroke-opacity=".55" stroke-width="1.5" ${e.src === "inferred" ? 'stroke-dasharray="5 4"' : ""}/>`;
+    svg += `<g class="node" data-t="${esc(e.p)}"><rect class="box" x="20" y="${y - 12}" width="${lw}" height="24" rx="5" fill="#fff" stroke="#cfd4dd"/>
+      <text x="30" y="${y + 4}" font-size="11.5"><tspan font-weight="700" fill="#1d2433">${esc(e.p)}</tspan><tspan fill="#8a94a6"> via ${esc(e.cc.join("+"))}</tspan></text></g>`;
+  });
+  right.forEach((e, i) => {
+    const y = rStart + i * rowH + rowH / 2, col = SRC_COLOR[e.src], x0 = cx + cwid + gap;
+    svg += `<path d="M${cx + cwid},${cy} C${cx + cwid + gap / 2},${cy} ${cx + cwid + gap / 2},${y} ${x0},${y}" fill="none" stroke="${col}" stroke-opacity=".55" stroke-width="1.5" ${e.src === "inferred" ? 'stroke-dasharray="5 4"' : ""}/>`;
+    svg += `<g class="node" data-t="${esc(e.c)}"><rect class="box" x="${x0}" y="${y - 12}" width="${rw}" height="24" rx="5" fill="#fff" stroke="#cfd4dd"/>
+      <text x="${x0 + 10}" y="${y + 4}" font-size="11.5"><tspan font-weight="700" fill="#1d2433">${esc(e.c)}</tspan><tspan fill="#8a94a6"> via ${esc(e.cc.join("+"))}</tspan></text></g>`;
+  });
+  svg += `<rect x="${cx}" y="${cy - 22}" width="${cwid}" height="44" rx="9" fill="var(--accent)"/><text x="${cx + cwid / 2}" y="${cy + 5}" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">${esc(t)}</text>`;
+  if (!left.length) svg += `<text x="20" y="${cy + 4}" font-size="12" fill="#8a94a6">(no outgoing links)</text>`;
+  if (!right.length) svg += `<text x="${cx + cwid + gap}" y="${cy + 4}" font-size="12" fill="#8a94a6">(nothing references it)</text>`;
+  svg += "</svg>";
+  $("#exDiagram").innerHTML = svg;
+  $("#exDiagram").querySelectorAll(".node").forEach(g => g.onclick = () => { $("#exInput").value = g.dataset.t; explore(); });
+  renderCols(t);
+}
+function renderCols(t) {
+  const cols = SCHEMA.columns[t];
+  if (!cols) { $("#exCols").innerHTML = CONNECTED ? "Click “Load columns from OTM”." : "Connect to OTM to load the full column list."; return; }
+  $("#exCols").innerHTML = `<div class="res-wrap" style="max-height:340px"><table class="res"><tr><th>#</th><th>Column</th><th>Type</th><th>Null?</th></tr>` +
+    cols.map((c, i) => `<tr><td>${i + 1}</td><td class="mono">${esc(c[0])}</td><td>${esc(c[1])}</td><td>${esc(c[2])}</td></tr>`).join("") + "</table></div>";
+}
+$("#btnExplore").onclick = explore;
+$("#exInput").addEventListener("keydown", e => { if (e.key === "Enter") explore(); });
+$("#exFilter").addEventListener("input", () => $("#exInput").value && explore());
+$("#btnExAddPath").onclick = () => { const t = $("#exInput").value.trim().toUpperCase(); if (t) { pathChips.add(t); showTab("path"); } };
+$("#btnExPreview").onclick = () => { const t = $("#exInput").value.trim().toUpperCase(); if (!t) return; openSql(`SELECT *\nFROM ${t}`, t); $("#maxRows").value = 50; if (CONNECTED) runQuery(); };
+$("#btnExCols").onclick = async () => {
+  const t = $("#exInput").value.trim().toUpperCase(); if (!t) return;
+  if (!CONNECTED) return msg("#exMsg", "Connect to OTM first.", "err");
+  const owner = $("#owner").value.trim().toUpperCase();
+  const r = await api("/api/query", {sql: `SELECT column_name AS C, data_type || CASE WHEN data_type LIKE '%CHAR%' THEN '(' || char_length || ')' END AS T, nullable AS N FROM all_tab_columns WHERE table_name = ${q(t)}${owner ? " AND owner = " + q(owner) : ""} ORDER BY column_id`, maxRows: 2000});
+  if (r.error) return msg("#exMsg", r.error, "err");
+  if (!r.rows.length) return msg("#exMsg", "No columns visible for " + t + " (check owner on the Schema Data tab).", "err");
+  SCHEMA.columns[t] = r.rows; saveSchema(); renderCols(t);
+};
+
+/* ---------------------------------------------------------------- query runner */
+let LAST = null, HISTORY = [];
+try { HISTORY = JSON.parse(localStorage.getItem("history")) || []; } catch (e) {}
+function renderHistory() {
+  $("#history").innerHTML = HISTORY.length ? HISTORY.map((h, i) => `<div data-i="${i}" title="${esc(h)}"><span class="ht">${esc(h.replace(/\s+/g, " ").slice(0, 80))}</span><span class="hsave" data-hsave="${i}" title="Save this query">☆</span></div>`).join("") : '<div class="muted">No queries yet</div>';
+  $("#history").querySelectorAll("[data-i]").forEach(d => d.onclick = () => openSql(HISTORY[+d.dataset.i]));
+}
+renderHistory();
+$("#btnRun").onclick = runQuery;
+$("#btnExport").onclick = () => {
+  const cell = v => v == null ? "" : /[",\n]/.test(v) ? '"' + String(v).replace(/"/g, '""') + '"' : v;
+  const csv = "﻿" + [LAST.columns, ...LAST.rows].map(r => r.map(cell).join(",")).join("\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: "text/csv"}));
+  a.download = "otm_query_" + new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-") + ".csv"; a.click();
+};
+
+/* ================================================================ QUERY DESIGNER */
+const dNewDesign = () => ({tables: [], joins: [], fields: [], steps: [], conds: [], distinct: false, customSql: null, seq: 1});
+let DESIGN = dNewDesign();
+try { const d = JSON.parse(localStorage.getItem("design")); if (d && d.tables) DESIGN = d; } catch (e) {}
+function dNorm() { DESIGN.conds = DESIGN.conds || []; DESIGN.steps = DESIGN.steps || []; DESIGN.distinct = !!DESIGN.distinct; if (DESIGN.customSql === undefined) DESIGN.customSql = null; }
+dNorm();
+/* derived tables (a subquery in FROM) are nodes with kind "derived" and their own SQL */
+const isDerived = t => !!t && t.kind === "derived";
+function tCols(t) {
+  if (isDerived(t)) {
+    try { const r = derivedCols(maskSql(t.sql || ""), 0, null); return {cols: r.cols.map(c => ({n: c.n, t: c.t || ""})), partial: r.partial, derived: true}; }
+    catch (e) { return {cols: [], partial: true, derived: true}; }
+  }
+  return knownCols(t.name);
+}
+function tSrc(t) {
+  if (isDerived(t)) return "(\n" + String(t.sql || "").trim().split("\n").map(l => "        " + l).join("\n") + "\n    )";
+  return (t.owner ? t.owner + "." : "") + t.name;
+}
+const AGG_FN_RE = /\b(COUNT|SUM|MIN|MAX|AVG|LISTAGG|MEDIAN|STDDEV|VARIANCE|COLLECT)\s*\(/i;
+function isAggExpr(e) { if (!e) return false; const m = maskSql(e); return AGG_FN_RE.test(m) && !/\bOVER\s*\(/i.test(m); }
+const isAggF = f => (!!f.agg && f.agg !== "GROUP") || (f.expr != null && !f.agg && isAggExpr(f.expr));
+function hasTopOr(sql) { let d = 0; for (const t of sqlTokens(maskSql(sql))) { if (t.u === "(") d++; else if (t.u === ")") d--; else if (d === 0 && t.u === "OR") return true; } return false; }
+const dSave = () => { try { localStorage.setItem("design", JSON.stringify(DESIGN)); } catch (e) {} };
+const nid = () => DESIGN.seq++;
+const tById = id => DESIGN.tables.find(t => t.id === id);
+const HUBS = () => avoidChips.get().map(globToRe);
+const isHub = name => HUBS().some(r => r.test(name)) || (DEGREE.get(name) || 0) > 120;
+const dmsg = (t, k = "info") => { msg("#dMsg", t, k); if (t) setTimeout(() => { if ($("#dMsg").textContent.includes(t.slice(0, 20))) msg("#dMsg", ""); }, 7000); };
+
+/* ---------- table list ---------- */
+function allTables() { return [...TABLESET].sort(); }
+function renderTableList() {
+  const f = $("#dSearch").value.trim().toUpperCase();
+  const list = allTables().filter(t => !f || t.includes(f));
+  $("#dTableList").innerHTML = list.slice(0, 400).map(t => `<div draggable="true" data-t="${esc(t)}">${esc(t)}<span>${DEGREE.get(t) || ""}</span></div>`).join("")
+    + (list.length > 400 ? `<div class="muted">… ${list.length - 400} more, refine search</div>` : "")
+    + (!list.length ? `<div class="muted">No match</div>` : "");
+  $("#dTableList").querySelectorAll("[data-t]").forEach(el => {
+    el.ondragstart = e => { e.dataTransfer.setData("text/otm-table", el.dataset.t); e.dataTransfer.effectAllowed = "copy"; };
+    el.ondblclick = () => dAddTable(el.dataset.t);
+  });
+}
+$("#dSearch").oninput = renderTableList;
+$("#dSearch").addEventListener("keydown", e => { if (e.key === "Enter") { const v = $("#dSearch").value.trim().toUpperCase(); if (v) { const exact = allTables().includes(v); if (!exact && !confirm(`${v} isn't in the schema data. Add it anyway?`)) return; dAddTable(v); } } });
+
+/* ---------- columns ---------- */
+function knownCols(name) {
+  if (SCHEMA.columns[name]) return {cols: SCHEMA.columns[name].map(c => ({n: c[0], t: c[1]})), partial: false};
+  const s = new Set(); if (ADJ.has(name) && SCHEMA.edges.some(e => (e.p === name && e.pc.includes(name + "_GID")) || (e.c === name && e.cc.includes(name + "_GID")))) s.add(name + "_GID");
+  for (const i of ADJ.get(name) || []) { const e = SCHEMA.edges[i]; if (e.c === name) e.cc.forEach(c => s.add(c)); if (e.p === name) e.pc.forEach(c => s.add(c)); }
+  return {cols: [...s].map(n => ({n, t: ""})), partial: true};
+}
+async function loadCols(name) {
+  if (SCHEMA.columns[name] || !CONNECTED) return false;
+  const owner = $("#owner").value.trim().toUpperCase();
+  const r = await api("/api/query", {sql: `SELECT column_name AS C, data_type || CASE WHEN data_type LIKE '%CHAR%' THEN '(' || char_length || ')' END AS T, nullable AS N FROM all_tab_columns WHERE table_name = ${q(name)}${owner ? " AND owner = " + q(owner) : ""} ORDER BY column_id`, maxRows: 3000});
+  if (r.error || !r.rows.length) return false;
+  SCHEMA.columns[name] = r.rows; saveSchema(); return true;
+}
+
+/* ---------- aliases ---------- */
+function newAlias(name) {
+  const used = new Set(DESIGN.tables.map(t => t.alias));
+  let a = name.toLowerCase().split(/[_$#]+/).filter(Boolean).map(w => w[0]).join("").slice(0, 4) || "t";
+  if (/^[0-9]/.test(a)) a = "t" + a;
+  let c = a, n = 2; while (used.has(c) || RESERVED.has(c)) c = a + n++;
+  return c;
+}
+
+/* ---------- add / remove tables ---------- */
+function freeSpot() {
+  const n = DESIGN.tables.length; const wrap = $("#dWrap");
+  return {x: wrap.scrollLeft + 30 + (n % 4) * 300, y: wrap.scrollTop + 20 + Math.floor(n / 4) * 300};
+}
+function edgePairs(ei, aName) {   // -> [[aCol,bCol],...]
+  const e = SCHEMA.edges[ei];
+  return e.c === aName ? e.cc.map((c, i) => [c, e.pc[i]]) : e.pc.map((c, i) => [c, e.cc[i]]);
+}
+function addJoin(a, b, ei, src) {
+  DESIGN.joins.push({id: nid(), a: a.id, b: b.id, pairs: edgePairs(ei, a.name), edge: ei, type: "INNER", src: src || SCHEMA.edges[ei].src});
+}
+function createTable(name, x, y) {
+  const t = {id: nid(), name, alias: newAlias(name), x, y, filter: ""};
+  DESIGN.tables.push(t); return t;
+}
+async function dAddTable(name, x, y) {
+  name = name.toUpperCase();
+  const others = DESIGN.tables.slice();
+  if (x == null) ({x, y} = freeSpot());
+  const t = createTable(name, x, y);
+  const notes = [];
+  if ($("#dAutoJoin").checked && others.length) {
+    // 1) direct link to an existing table (prefer non-hub, most recent, real FK)
+    const used = new Set(DESIGN.joins.filter(j => j.edge != null).map(j => j.edge + "|" + j.a + "|" + j.b));
+    const sameName = DESIGN.tables.filter(o => o.name === name).map(o => o.id);
+    const cands = [];
+    others.forEach((o, idx) => {
+      for (const ei of alternatives(name, o.name)) {
+        if (o.name === name) continue;
+        const taken = DESIGN.joins.some(j => j.edge === ei && ((j.a === o.id && sameName.includes(j.b)) || (j.b === o.id && sameName.includes(j.a))));
+        if (taken) continue;
+        const e = SCHEMA.edges[ei];
+        cands.push({o, ei, score: (isHub(o.name) ? 10 : 0) + (e.src === "inferred" ? 1 : 0) - idx * 0.01});
+      }
+    });
+    cands.sort((p, q2) => p.score - q2.score);
+    if (cands.length) { addJoin(cands[0].o, t, cands[0].ei); }
+    else {
+      // 2) no direct link: find a route and add the bridge tables
+      const names = new Set(others.map(o => o.name));
+      const blocked = n => isHub(n);
+      const steps = shortest(names, name, blocked, $("#useInferred").checked);
+      if (steps && steps.length <= 6) {
+        const inst = n => DESIGN.tables.find(o => o.name === n && o.id !== t.id) || null;
+        let prev = inst(steps[0].from); let k = 0;
+        for (const s of steps) {
+          const target = s.to === name ? t : (inst(s.to) || createTable(s.to, Math.max(0, x - 290 * (steps.length - 1 - k)), y + 60));
+          if (s.to !== name && !notes.includes(s.to)) notes.push(s.to);
+          addJoin(prev, target, s.edge); prev = target; k++;
+        }
+      } else dmsg(`${name} has no known link to the tables on the diagram — it will be a cross join until you add a join (drag a column onto another column).`, "err");
+    }
+  }
+  render(); dSave();
+  if (notes.length) $("#dArrange").onclick();
+  if (notes.length) dmsg(`Added bridge table${notes.length > 1 ? "s" : ""} ${notes.join(", ")} to connect ${name}.`, "ok");
+  const loads = [t.name, ...notes].map(loadCols);
+  if ((await Promise.all(loads)).some(Boolean)) render();
+}
+function dRemoveTable(id) {
+  DESIGN.tables = DESIGN.tables.filter(t => t.id !== id);
+  DESIGN.joins = DESIGN.joins.filter(j => j.a !== id && j.b !== id);
+  DESIGN.fields = DESIGN.fields.filter(f => f.tid !== id);
+  render(); dSave();
+}
+
+/* ---------- canvas render ---------- */
+function render() {
+  const cv = $("#dCanvas");
+  cv.querySelectorAll(".dbox,.dpop").forEach(b => b.remove());
+  $("#dEmpty").style.display = DESIGN.tables.length ? "none" : "block";
+  dNorm();
+  $("#dDistinct").checked = DESIGN.distinct;
+  for (const t of DESIGN.tables) {
+    const {cols, partial} = tCols(t);
+    const der = isDerived(t);
+    const own = der ? "" : t.name + "_GID";
+    const checked = c => DESIGN.fields.some(f => f.tid === t.id && f.col === c);
+    const joined = new Set(); DESIGN.joins.forEach(j => j.pairs.forEach(p => { if (j.a === t.id) joined.add(p[0]); if (j.b === t.id) joined.add(p[1]); }));
+    // make sure join columns exist in the list even if partial
+    joined.forEach(c => { if (!cols.some(x => x.n === c)) cols.push({n: c, t: ""}); });
+    const el = document.createElement("div");
+    el.className = "dbox" + (der ? " derived" : ""); el.dataset.tid = t.id; el.style.left = t.x + "px"; el.style.top = t.y + "px";
+    el.innerHTML = `<div class="dhead"><b title="${esc(der ? t.sql : t.name)}">${der ? "⧉ subquery" : esc((t.owner ? t.owner + "." : "") + t.name)}</b><span class="al">${esc(t.alias)}</span>
+        ${der ? '<span class="ic" data-act="edit" title="Edit the subquery">✎</span>' : CONNECTED && partial ? '<span class="ic" data-act="cols" title="Load all columns from OTM">↻</span>' : ""}
+        <span class="ic" data-act="x" title="Remove">✕</span></div>
+      ${der ? `<div class="dnote der" title="${esc(t.sql)}">${esc(String(t.sql).replace(/\s+/g, " ").slice(0, 90))}</div>${partial ? '<div class="dnote">Some columns unknown — give every expression an alias</div>' : ""}`
+            : partial ? `<div class="dnote">${CONNECTED ? "Key columns only — click ↻ to load all" : "Key columns only — connect to load all"}</div>` : ""}
+      <input class="dfilter" placeholder="filter columns…" value="${esc(t.filter || "")}">
+      <div class="dbody">
+        <label class="dcol all" data-col="*"><input type="checkbox" ${checked("*") ? "checked" : ""}> <span class="k">✱</span>(All Columns)</label>
+        ${cols.map(c => `<label class="dcol" draggable="true" data-col="${esc(c.n)}"><input type="checkbox" ${checked(c.n) ? "checked" : ""}>
+          <span class="k">${c.n === own ? "🔑" : joined.has(c.n) ? "🔗" : ""}</span>${esc(c.n)}<small>${esc(c.t || "")}</small></label>`).join("")}
+      </div>`;
+    cv.appendChild(el);
+    wireBox(el, t);
+    applyFilter(el, t.filter);
+  }
+  drawLines(); renderGrid(); renderConds(); renderDSql();
+  $("#tab-design").classList.toggle("dlocked", DESIGN.customSql != null);
+}
+function applyFilter(el, f) {
+  f = (f || "").toUpperCase();
+  el.querySelectorAll(".dcol:not(.all)").forEach(r => r.style.display = !f || r.dataset.col.includes(f) ? "" : "none");
+}
+function wireBox(el, t) {
+  const head = el.querySelector(".dhead");
+  head.onmousedown = e => {
+    if (e.target.dataset.act) return;
+    e.preventDefault();
+    const sx = e.clientX, sy = e.clientY, ox = t.x, oy = t.y;
+    document.querySelectorAll(".dbox").forEach(b => b.classList.remove("sel")); el.classList.add("sel");
+    const mv = ev => { t.x = Math.max(0, ox + ev.clientX - sx); t.y = Math.max(0, oy + ev.clientY - sy); el.style.left = t.x + "px"; el.style.top = t.y + "px"; drawLines(); };
+    const up = () => { document.removeEventListener("mousemove", mv); document.removeEventListener("mouseup", up); dSave(); };
+    document.addEventListener("mousemove", mv); document.addEventListener("mouseup", up);
+  };
+  head.querySelector('[data-act="x"]').onclick = () => dRemoveTable(t.id);
+  const ed = head.querySelector('[data-act="edit"]');
+  if (ed) ed.onclick = ev => editDerived(t, ev);
+  const rl = head.querySelector('[data-act="cols"]');
+  if (rl) rl.onclick = async () => { rl.textContent = "…"; if (await loadCols(t.name)) render(); else { rl.textContent = "↻"; dmsg("Could not load columns for " + t.name, "err"); } };
+  const fi = el.querySelector(".dfilter");
+  fi.oninput = () => { t.filter = fi.value; applyFilter(el, fi.value); drawLines(); };
+  el.querySelector(".dbody").addEventListener("scroll", drawLines);
+  el.querySelectorAll(".dcol input").forEach(cb => cb.onchange = () => {
+    const col = cb.closest(".dcol").dataset.col;
+    if (cb.checked) DESIGN.fields.push({id: nid(), tid: t.id, col, alias: "", output: true, agg: "", sort: "", sortOrder: "", filter: ""});
+    else DESIGN.fields = DESIGN.fields.filter(f => !(f.tid === t.id && f.col === col));
+    renderGrid(); renderDSql(); dSave();
+  });
+  // column -> column drag for manual joins
+  el.querySelectorAll(".dcol[draggable]").forEach(r => {
+    r.ondragstart = e => { e.dataTransfer.setData("text/otm-col", JSON.stringify({tid: t.id, col: r.dataset.col})); e.dataTransfer.effectAllowed = "link"; };
+    r.ondragover = e => { if ([...e.dataTransfer.types].includes("text/otm-col")) { e.preventDefault(); r.classList.add("drop"); } };
+    r.ondragleave = () => r.classList.remove("drop");
+    r.ondrop = e => {
+      r.classList.remove("drop");
+      const raw = e.dataTransfer.getData("text/otm-col"); if (!raw) return;
+      e.preventDefault(); e.stopPropagation();
+      const src = JSON.parse(raw); if (src.tid === t.id) return;
+      let j = DESIGN.joins.find(j => (j.a === src.tid && j.b === t.id) || (j.a === t.id && j.b === src.tid));
+      if (j) { j.pairs.push(j.a === src.tid ? [src.col, r.dataset.col] : [r.dataset.col, src.col]); j.edge = null; j.src = "manual"; }
+      else DESIGN.joins.push({id: nid(), a: src.tid, b: t.id, pairs: [[src.col, r.dataset.col]], edge: null, type: "INNER", src: "manual"});
+      render(); dSave();
+    };
+  });
+}
+
+/* ---------- join lines ---------- */
+function anchor(tid, col) {
+  const box = document.querySelector(`.dbox[data-tid="${tid}"]`); if (!box) return null;
+  const cv = $("#dCanvas").getBoundingClientRect(), b = box.getBoundingClientRect();
+  const body = box.querySelector(".dbody").getBoundingClientRect();
+  const row = [...box.querySelectorAll(".dcol")].find(r => r.dataset.col === col && r.style.display !== "none");
+  let y = b.top + 14;
+  if (row) { const rr = row.getBoundingClientRect(); y = Math.min(Math.max(rr.top + rr.height / 2, body.top + 6), body.bottom - 6); }
+  return {l: b.left - cv.left, r: b.right - cv.left, y: y - cv.top, cx: (b.left + b.right) / 2 - cv.left};
+}
+const JCOL = {fk: "#178a5a", builtin: "#2f6fde", import: "#6b4fd8", inferred: "#b26b00", manual: "#475467"};
+function drawLines() {
+  let s = "";
+  for (const j of DESIGN.joins) {
+    (j.pairs.length ? j.pairs : [[null, null]]).forEach((p, i) => {
+      const A = anchor(j.a, p[0]), B = anchor(j.b, p[1]); if (!A || !B) return;
+      const ltr = A.cx <= B.cx;
+      const x1 = ltr ? A.r : A.l, x2 = ltr ? B.l : B.r, d = Math.max(40, Math.abs(x2 - x1) / 2) * (ltr ? 1 : -1);
+      const path = `M${x1},${A.y} C${x1 + d},${A.y} ${x2 - d},${B.y} ${x2},${B.y}`;
+      const c = JCOL[j.src] || "#475467";
+      s += `<path d="${path}" fill="none" stroke="${c}" stroke-width="2" ${j.src === "inferred" ? 'stroke-dasharray="6 4"' : ""}/>`;
+      s += `<path class="hit" data-j="${j.id}" d="${path}" fill="none" stroke="transparent" stroke-width="12"/>`;
+      s += `<circle cx="${x1}" cy="${A.y}" r="4" fill="${j.type === "LEFT" || j.type === "FULL" ? "#fff" : c}" stroke="${c}" stroke-width="2"/>`;
+      s += `<circle cx="${x2}" cy="${B.y}" r="4" fill="${j.type === "RIGHT" || j.type === "FULL" ? "#fff" : c}" stroke="${c}" stroke-width="2"/>`;
+      if (i === 0) {
+        const mx = (x1 + x2) / 2, my = (A.y + B.y) / 2;
+        s += `<g class="hitg"><rect x="${mx - 22}" y="${my - 9}" width="44" height="18" rx="9" fill="#fff" stroke="${c}"/><text x="${mx}" y="${my + 4}" text-anchor="middle" font-size="10" font-weight="700" fill="${c}">${j.type}${j.extra ? "+" : ""}</text>
+          <path class="hit" data-j="${j.id}" d="M${mx - 22},${my} h44" stroke="transparent" stroke-width="18"/></g>`;
+      }
+    });
+  }
+  $("#dSvg").innerHTML = s;
+  $("#dSvg").querySelectorAll(".hit").forEach(h => h.onclick = ev => joinPopover(+h.dataset.j, ev));
+}
+window.addEventListener("resize", () => DESIGN.tables.length && drawLines());
+
+function joinPopover(jid, ev) {
+  document.querySelectorAll(".dpop").forEach(p => p.remove());
+  const j = DESIGN.joins.find(x => x.id === jid); if (!j) return;
+  const A = tById(j.a), B = tById(j.b);
+  const cv = $("#dCanvas").getBoundingClientRect();
+  const pop = document.createElement("div"); pop.className = "dpop";
+  pop.style.left = Math.max(10, ev.clientX - cv.left - 200) + "px"; pop.style.top = (ev.clientY - cv.top + 12) + "px";
+  const alts = isDerived(A) || isDerived(B) ? [] : alternatives(A.name, B.name);
+  pop.innerHTML = `<h4>${esc(A.name)} <span class="muted">${esc(A.alias)}</span> ⟷ ${esc(B.name)} <span class="muted">${esc(B.alias)}</span></h4>
+    <div class="pairs">${j.pairs.map(p => `${esc(A.alias)}.${esc(p[0])} = ${esc(B.alias)}.${esc(p[1])}`).join("<br>AND ") || '<span class="muted">no column pairs</span>'}</div>
+    <div class="small muted">Extra ON condition <span title="Kept inside ON — for LEFT joins this is different from a WHERE filter">(optional)</span></div>
+    <textarea id="jExtra" rows="2" class="mono" style="width:100%;font-size:11.5px;margin:3px 0 8px" placeholder="e.g. ${esc(B.alias)}.SHIPMENT_REFNUM_QUAL_GID = 'BM'">${esc(j.extra || "")}</textarea>
+    ${[["INNER", "Only rows that match in both"], ["LEFT", `All rows from ${A.name}`], ["RIGHT", `All rows from ${B.name}`], ["FULL", "All rows from both"]]
+      .map(([v, l]) => `<label class="inline"><input type="radio" name="jt" value="${v}" ${j.type === v ? "checked" : ""}> <b>${v}</b> <span class="muted">— ${esc(l)}</span></label>`).join("")}
+    ${alts.length > 1 ? `<div style="margin-top:8px" class="small muted">Use relationship</div><select id="jAlt">${alts.map(ei => { const e = SCHEMA.edges[ei]; return `<option value="${ei}" ${ei === j.edge ? "selected" : ""}>${esc(e.c + "." + e.cc.join("+") + " → " + e.p + "." + e.pc.join("+"))}</option>`; }).join("")}</select>` : ""}
+    <div class="row" style="margin-top:10px;justify-content:space-between"><button class="btn small" data-a="del">Delete join</button><button class="btn small primary" data-a="ok">Done</button></div>`;
+  $("#dCanvas").appendChild(pop);
+  pop.querySelectorAll("input[name=jt]").forEach(r => r.onchange = () => { j.type = r.value; drawLines(); renderDSql(); dSave(); });
+  pop.querySelector("#jExtra").oninput = e => { j.extra = e.target.value.trim(); if (!j.pairs.length && !j.extra) return; drawLines(); renderDSql(); dSave(); };
+  const alt = pop.querySelector("#jAlt");
+  if (alt) alt.onchange = () => { j.edge = +alt.value; j.pairs = edgePairs(j.edge, A.name); j.src = SCHEMA.edges[j.edge].src; render(); dSave(); };
+  pop.querySelector('[data-a="del"]').onclick = () => { DESIGN.joins = DESIGN.joins.filter(x => x.id !== jid); render(); dSave(); };
+  pop.querySelector('[data-a="ok"]').onclick = () => pop.remove();
+}
+
+/* ---------- drop tables on canvas ---------- */
+$("#dCanvas").addEventListener("dragover", e => { if ([...e.dataTransfer.types].includes("text/otm-table")) { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; } });
+$("#dCanvas").addEventListener("drop", e => {
+  const name = e.dataTransfer.getData("text/otm-table"); if (!name) return;
+  e.preventDefault();
+  const cv = $("#dCanvas").getBoundingClientRect();
+  dAddTable(name, Math.max(0, e.clientX - cv.left - 120), Math.max(0, e.clientY - cv.top - 14));
+});
+$("#dCanvas").addEventListener("mousedown", e => { if (!e.target.closest(".dpop") && !e.target.closest(".hit")) document.querySelectorAll(".dpop").forEach(p => p.remove()); });
+
+/* ---------- criteria grid ---------- */
+function fieldLabel(f) { const t = tById(f.tid); return f.expr != null ? null : `${t ? t.alias : "?"}.${f.col === "*" ? "*" : f.col}`; }
+function renderGrid() {
+  if (!DESIGN.fields.length) { $("#dGrid").innerHTML = `<tr><td class="muted" style="padding:10px">Tick columns in the diagram (or add an expression) to build the SELECT list.</td></tr>`; return; }
+  $("#dGrid").innerHTML = `<tr><th></th><th>Column</th><th>Table</th><th>Alias</th><th>Output</th><th>Aggregate</th><th>Sort</th><th>Order</th><th style="width:30%">Filter</th><th></th></tr>` +
+    DESIGN.fields.map((f, i) => {
+      const t = tById(f.tid);
+      return `<tr data-f="${f.id}">
+        <td><span class="rb" data-a="up" title="Move up">▲</span><span class="rb" data-a="dn" title="Move down">▼</span></td>
+        <td class="c">${f.expr != null ? `<input type="text" data-k="expr" value="${esc(f.expr)}" placeholder="e.g. TRUNC(s.START_TIME)">` : esc(f.col === "*" ? "* (all)" : f.col)}</td>
+        <td class="c muted">${t ? (isDerived(t) ? "subquery " + esc(t.alias) : esc(t.name)) : "—"}</td>
+        <td><input type="text" data-k="alias" value="${esc(f.alias)}"></td>
+        <td style="text-align:center"><input type="checkbox" data-k="output" ${f.output ? "checked" : ""}></td>
+        <td><select data-k="agg">${["", "GROUP", "COUNT", "COUNT DISTINCT", "SUM", "MIN", "MAX", "AVG"].map(a => `<option ${f.agg === a ? "selected" : ""} value="${a}">${a === "GROUP" ? "Group by" : a || (f.expr != null && isAggExpr(f.expr) ? "(in expression)" : "—")}</option>`).join("")}</select></td>
+        <td><select data-k="sort">${[...new Set(["", "ASC", "DESC", "ASC NULLS FIRST", "DESC NULLS LAST", f.sort || ""])].map(a => `<option ${f.sort === a ? "selected" : ""} value="${a}">${a || "—"}</option>`).join("")}</select></td>
+        <td><input type="number" data-k="sortOrder" value="${esc(f.sortOrder)}" min="1"></td>
+        <td><input type="text" data-k="filter" value="${esc(f.filter)}" placeholder="= 'VALUE'"></td>
+        <td><span class="rb" data-a="rm" title="Remove">✕</span></td></tr>`;
+    }).join("");
+  $("#dGrid").querySelectorAll("tr[data-f]").forEach(tr => {
+    const f = DESIGN.fields.find(x => x.id === +tr.dataset.f);
+    tr.querySelectorAll("[data-k]").forEach(inp => {
+      const ev = inp.tagName === "SELECT" || inp.type === "checkbox" ? "change" : "input";
+      inp.addEventListener(ev, () => { f[inp.dataset.k] = inp.type === "checkbox" ? inp.checked : inp.value; renderDSql(); dSave(); });
+    });
+    tr.querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
+      const i = DESIGN.fields.indexOf(f);
+      if (b.dataset.a === "rm") { DESIGN.fields.splice(i, 1); render(); }
+      if (b.dataset.a === "up" && i > 0) { [DESIGN.fields[i - 1], DESIGN.fields[i]] = [DESIGN.fields[i], DESIGN.fields[i - 1]]; renderGrid(); }
+      if (b.dataset.a === "dn" && i < DESIGN.fields.length - 1) { [DESIGN.fields[i + 1], DESIGN.fields[i]] = [DESIGN.fields[i], DESIGN.fields[i + 1]]; renderGrid(); }
+      renderDSql(); dSave();
+    });
+  });
+}
+$("#dAddExpr").onclick = () => { DESIGN.fields.push({id: nid(), tid: null, col: null, expr: "", alias: "", output: true, agg: "", sort: "", sortOrder: "", filter: ""}); renderGrid(); dSave(); };
+
+/* ---------- SQL generation ---------- */
+function cond(expr, f) {
+  f = f.trim(); if (!f) return null;
+  if (/^(=|<>|!=|<=|>=|<|>|LIKE\b|NOT\b|IN\b|IS\b|BETWEEN\b)/i.test(f)) return `${expr} ${f}`;
+  if (/^-?\d+(\.\d+)?$/.test(f) || /^'.*'$/.test(f)) return `${expr} = ${f}`;
+  if (f.includes("%")) return `${expr} LIKE ${q(f)}`;
+  return `${expr} = ${q(f)}`;
+}
+function dBuildBase(withOrder) {
+  const T = DESIGN.tables; if (!T.length) return null;
+  const outCols = []; let partial = false;
+  const lines = [];
+  // FROM / JOIN order: walk the join graph from the first table, in table order. A table that is OUTER-joined
+  // to an earlier table waits until that table is in, so its ON conditions are never split off into WHERE.
+  const idx = new Map(T.map((t, i) => [t.id, i]));
+  const inc = [T[0].id], used = new Set(); let from = `FROM ${tSrc(T[0])} ${T[0].alias}`;
+  while (inc.length < T.length) {
+    let added = false;
+    for (const t of T) {
+      if (inc.includes(t.id)) continue;
+      const js = DESIGN.joins.filter(j => !used.has(j.id) && ((j.a === t.id && inc.includes(j.b)) || (j.b === t.id && inc.includes(j.a))));
+      if (!js.length) continue;
+      const waits = DESIGN.joins.some(j => j.type !== "INNER" && (j.a === t.id || j.b === t.id) && (o => !inc.includes(o) && idx.get(o) < idx.get(t.id))(j.a === t.id ? j.b : j.a));
+      if (waits) continue;
+      const first = js[0];
+      let type = first.type;
+      if (first.a === t.id) type = type === "LEFT" ? "RIGHT" : type === "RIGHT" ? "LEFT" : type;  // traversed backwards
+      const conds = [];
+      for (const j of js) {
+        used.add(j.id);
+        const A = tById(j.a), B = tById(j.b);
+        j.pairs.forEach(p => conds.push(j.b === t.id ? `${B.alias}.${p[1]} = ${A.alias}.${p[0]}` : `${A.alias}.${p[0]} = ${B.alias}.${p[1]}`));
+        if (j.extra) conds.push(hasTopOr(j.extra) ? `(${j.extra})` : j.extra);
+      }
+      if (!conds.length) conds.push("1 = 1");
+      const warn = js.some(j => j.src === "inferred") ? "   -- inferred link, verify" : "";
+      from += `\n${type === "INNER" ? "INNER" : type + " OUTER"} JOIN ${tSrc(t)} ${t.alias}\n    ON ${conds.join("\n    AND ")}${warn}`;
+      inc.push(t.id); added = true; break;
+    }
+    if (!added) { const t = T.find(x => !inc.includes(x.id)); from += `\nCROSS JOIN ${tSrc(t)} ${t.alias}   -- ⚠ no join defined`; inc.push(t.id); }
+  }
+  // extra joins between already-included tables (cycles) -> WHERE conditions
+  const extra = [];
+  DESIGN.joins.filter(j => !used.has(j.id)).forEach(j => { const A = tById(j.a), B = tById(j.b); j.pairs.forEach(p => extra.push(`${A.alias}.${p[0]} = ${B.alias}.${p[1]}`)); if (j.extra) extra.push(hasTopOr(j.extra) ? `(${j.extra})` : j.extra); });
+
+  const F = DESIGN.fields.filter(f => f.expr == null || f.expr.trim());
+  const exprOf = f => f.expr != null ? f.expr.trim() : `${tById(f.tid).alias}.${f.col === "*" ? "*" : f.col}`;
+  const aggOf = f => { const e = exprOf(f); if (!f.agg || f.agg === "GROUP") return e; if (f.agg === "COUNT DISTINCT") return `COUNT(DISTINCT ${e})`; return `${f.agg}(${f.col === "*" && f.agg === "COUNT" ? "*" : e})`; };
+  const hasAgg = F.some(isAggF), hasGroup = hasAgg || F.some(f => f.agg === "GROUP");
+  const names = new Set(); const sel = [];
+  for (const f of F.filter(f => f.output)) {
+    let alias = f.alias.trim();
+    if (!alias && ((f.agg && f.agg !== "GROUP") || f.expr != null)) alias = ((f.agg && f.agg !== "GROUP" ? f.agg.replace(" ", "_") + "_" : "") + (f.col && f.col !== "*" ? f.col : "EXPR")).slice(0, 30);
+    const name = alias || (f.col !== "*" ? f.col : "");
+    if (name) {   // OTM returns columns as XML attributes, so output names must be unique
+      let n = name, k = 2; while (names.has(n.toUpperCase())) n = name.slice(0, 27) + "_" + k++;
+      if (n !== name) alias = n; names.add(n.toUpperCase());
+    }
+    const a = alias ? ` AS ${/^[A-Za-z][A-Za-z0-9_$#]*$/.test(alias) ? alias : '"' + alias.replace(/"/g, "") + '"'}` : "";
+    sel.push(aggOf(f) + a);
+    if (f.col === "*" && !isAggF(f)) { const k = tCols(tById(f.tid)); if (k.partial) partial = true; k.cols.forEach(c => outCols.push(normName(c.n))); }
+    else outCols.push(normName(alias || f.col));
+  }
+  if (!sel.length) { sel.push(`${T[0].alias}.*`); const k = tCols(T[0]); if (k.partial) partial = true; k.cols.forEach(c => outCols.push(normName(c.n))); }
+  const where = [...extra], having = [];
+  for (const f of F) { const c = cond(isAggF(f) ? aggOf(f) : exprOf(f), f.filter || ""); if (c) (isAggF(f) ? having : where).push(c); }
+  for (const c of DESIGN.conds || []) if (c.sql && c.sql.trim()) (c.having ? having : where).push(hasTopOr(c.sql) ? `(${c.sql.trim()})` : c.sql.trim());
+  const group = hasGroup ? [...new Set(F.filter(f => (f.output && !isAggF(f) && f.col !== "*") || f.agg === "GROUP").map(exprOf))] : [];
+  const order = F.filter(f => f.sort).map((f, i) => ({f, i, o: +f.sortOrder || 999})).sort((a, b) => a.o - b.o || a.i - b.i)
+    .map(({f}) => `${isAggF(f) ? aggOf(f) : exprOf(f)} ${f.sort}`);
+  let sql = `SELECT${DESIGN.distinct ? " DISTINCT" : ""}\n    ${sel.join(",\n    ")}\n${from}`;
+  if (where.length) sql += `\nWHERE ${where.join("\n  AND ")}`;
+  if (group.length) sql += `\nGROUP BY ${group.join(", ")}`;
+  if (having.length) sql += `\nHAVING ${having.join("\n   AND ")}`;
+  if (order.length && withOrder) sql += `\nORDER BY ${order.join(", ")}`;
+  if (hasGroup && F.some(f => f.output && !isAggF(f) && f.col === "*")) sql = "-- ⚠ (All Columns) can't be combined with aggregates\n" + sql;
+  return {sql, cols: outCols, partial};
+}
+function dBuildSql() { return buildFull(); }
+function renderDSql(skipSteps) {
+  if (!skipSteps && typeof refreshStepMeta === "function") refreshStepMeta();
+  if (typeof dsqlRefresh === "function") dsqlRefresh();
+}
+$("#dDistinct").onchange = () => { DESIGN.distinct = $("#dDistinct").checked; renderDSql(); dSave(); };
+
+/* ---------- toolbar ---------- */
+$("#dCopy").onclick = () => { navigator.clipboard.writeText(dCurrentSql()); $("#dCopy").textContent = "Copied"; setTimeout(() => $("#dCopy").textContent = "Copy", 1200); };
+$("#dToRunner").onclick = () => openSql(dCurrentSql(), "Designer");
+$("#dClear").onclick = () => { if (!DESIGN.tables.length || confirm("Start a new query? The current diagram will be cleared.")) { DESIGN = dNewDesign(); render(); renderSteps(); dSave(); msg("#dMsg", ""); } };
+$("#dArrange").onclick = () => {
+  // layered layout following the join graph
+  const T = DESIGN.tables; if (!T.length) return;
+  const lvl = new Map([[T[0].id, 0]]), queue = [T[0].id];
+  while (queue.length) { const u = queue.shift(); DESIGN.joins.forEach(j => { const v = j.a === u ? j.b : j.b === u ? j.a : null; if (v != null && !lvl.has(v)) { lvl.set(v, lvl.get(u) + 1); queue.push(v); } }); }
+  let maxL = Math.max(...lvl.values()); T.forEach(t => { if (!lvl.has(t.id)) lvl.set(t.id, ++maxL); });
+  const rows = {}; T.forEach(t => { const l = lvl.get(t.id); rows[l] = (rows[l] || 0); t.x = 30 + l * 310; t.y = 20 + rows[l] * 320; rows[l]++; });
+  render(); dSave();
+};
+$("#dRun").onclick = () => { if (typeof dsqlApplyIfDirty === "function") dsqlApplyIfDirty(); runInDesigner(dCurrentSql(), DESIGN.customSql != null ? "Your SQL" : DESIGN.steps.length ? "Full query" : "Query"); };
+
+/* ---------- from Path Finder ---------- */
+function pathToDesigner() {
+  if (!PATH) return;
+  DESIGN = dNewDesign();
+  const inst = {}; const order = [PATH.root, ...PATH.steps.map(s => s.to)];
+  const depth = {[PATH.root]: 0}, cnt = {};
+  PATH.steps.forEach(s => depth[s.to] = depth[s.from] + 1);
+  order.forEach(n => { const d = depth[n]; cnt[d] = cnt[d] || 0; inst[n] = createTable(n, 30 + d * 310, 20 + cnt[d]++ * 300); });
+  PATH.steps.forEach(s => addJoin(inst[s.from], inst[s.to], s.edge));
+  if ($("#joinType").value.startsWith("LEFT")) DESIGN.joins.forEach(j => j.type = "LEFT");
+  order.filter(n => PATH.requested.has(n)).forEach(n => { const own = n + "_GID"; if (knownCols(n).cols.some(c => c.n === own)) DESIGN.fields.push({id: nid(), tid: inst[n].id, col: own, alias: "", output: true, agg: "", sort: "", sortOrder: "", filter: ""}); });
+  showTab("design"); render(); renderSteps(); dSave();
+  Promise.all(order.map(loadCols)).then(r => r.some(Boolean) && render());
+}
+
+
+/* ================================================================ STEPS (WITH / CTE pipeline) */
+if (!DESIGN.steps) DESIGN.steps = [];
+const BASE_NAME = "BASE";
+const stepById = id => DESIGN.steps.find(s => s.id === id);
+const isIdent = s => /^[A-Za-z][A-Za-z0-9_$#]*$/.test(s);
+const ref = n => isIdent(n) ? n : '"' + String(n).replace(/"/g, "") + '"';
+const normName = s => { s = String(s || "").trim(); return isIdent(s) ? s.toUpperCase() : s; };
+const identify = s => { let x = String(s || "").toUpperCase().replace(/[^A-Z0-9_$#]+/g, "_").replace(/^_+|_+$/g, ""); if (!x) return ""; if (!/^[A-Z]/.test(x)) x = "C_" + x; return x.slice(0, 30); };
+const indent = (s, n = 4) => s.split("\n").map(l => " ".repeat(n) + l).join("\n");
+const int = (v, d) => /^\d+$/.test(String(v).trim()) ? String(v).trim() : String(d);
+
+/* ---------- window function catalogue ---------- */
+const WFN = {
+  ROW_NUMBER:      {g: "Ranking", needOrder: true},
+  RANK:            {g: "Ranking", needOrder: true},
+  DENSE_RANK:      {g: "Ranking", needOrder: true},
+  NTILE:           {g: "Ranking", needOrder: true, n: true},
+  PERCENT_RANK:    {g: "Ranking", needOrder: true},
+  CUME_DIST:       {g: "Ranking", needOrder: true},
+  LAG:             {g: "Previous / next row", col: true, off: true, def: true, needOrder: true},
+  LEAD:            {g: "Previous / next row", col: true, off: true, def: true, needOrder: true},
+  FIRST_VALUE:     {g: "Value at a position", col: true, ign: true, needOrder: true, frame: true},
+  LAST_VALUE:      {g: "Value at a position", col: true, ign: true, needOrder: true, frame: true},
+  NTH_VALUE:       {g: "Value at a position", col: true, ign: true, needOrder: true, frame: true, n: true},
+  SUM:             {g: "Aggregate over window", col: true, frame: true},
+  AVG:             {g: "Aggregate over window", col: true, frame: true},
+  MIN:             {g: "Aggregate over window", col: true, frame: true},
+  MAX:             {g: "Aggregate over window", col: true, frame: true},
+  COUNT:           {g: "Aggregate over window", col: true, frame: true},
+  COUNT_STAR:      {g: "Aggregate over window", label: "COUNT(*)", frame: true},
+  RATIO_TO_REPORT: {g: "Aggregate over window", col: true, noOrder: true},
+  LISTAGG:         {g: "Text", col: true, sep: true, orderWithin: true},
+};
+const FRAMES = {
+  default: "Default (Oracle decides)",
+  whole: "Whole partition (all rows in the group)",
+  running: "Running: first row → current row",
+  moving: "Moving: last N rows",
+  centered: "Centered: N rows before and after",
+  toEnd: "Current row → last row",
+  custom: "Custom…",
+};
+function frameSql(c) {
+  const n = +int(c.frameN, 3);
+  switch (c.frame) {
+    case "whole": return "ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING";
+    case "running": return "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW";
+    case "moving": return `ROWS BETWEEN ${Math.max(0, n - 1)} PRECEDING AND CURRENT ROW`;
+    case "centered": return `ROWS BETWEEN ${n} PRECEDING AND ${n} FOLLOWING`;
+    case "toEnd": return "ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING";
+    case "custom": return (c.frameCustom || "").trim();
+    default: return "";
+  }
+}
+function autoCalcName(c) {
+  const col = c.col ? identify(c.col) : "";
+  const m = {ROW_NUMBER: "RN", RANK: "RNK", DENSE_RANK: "DENSE_RNK", NTILE: "BUCKET", PERCENT_RANK: "PCT_RANK", CUME_DIST: "CUME_DIST",
+    LAG: "PREV_" + col, LEAD: "NEXT_" + col, FIRST_VALUE: "FIRST_" + col, LAST_VALUE: "LAST_" + col, NTH_VALUE: "NTH_" + col,
+    SUM: (c.frame === "running" ? "RUNNING_" : c.frame === "moving" ? "MOVING_SUM_" : "SUM_") + col,
+    AVG: (c.frame === "moving" ? "MOVING_AVG_" : "AVG_") + col, MIN: "MIN_" + col, MAX: "MAX_" + col,
+    COUNT: "COUNT_" + col, COUNT_STAR: c.frame === "running" ? "ROW_SEQ" : "ROWS_IN_GROUP", RATIO_TO_REPORT: "SHARE_" + col, LISTAGG: col + "_LIST"};
+  return identify(m[c.fn] || "CALC").replace(/_$/, "") || "CALC";
+}
+function ordList(list) { return (list || []).filter(o => o.col).map(o => `${ref(o.col)} ${o.dir || "ASC"}${o.nulls ? " NULLS " + o.nulls : ""}`); }
+function calcSql(c) {
+  if (c.kind === "expr") return `(${(c.expr || "").trim() || "NULL"})`;
+  const m = WFN[c.fn] || {}, col = c.col ? ref(c.col) : "NULL";
+  const part = (c.part || []).filter(Boolean).map(ref);
+  const ord = ordList(c.order);
+  let fn;
+  switch (c.fn) {
+    case "NTILE": fn = `NTILE(${int(c.n, 4)})`; break;
+    case "LAG": case "LEAD": {
+      const off = int(c.off || 1, 1), def = (c.def || "").trim();
+      fn = `${c.fn}(${col}${def ? `, ${off}, ${def}` : off !== "1" ? `, ${off}` : ""})`; break;
+    }
+    case "FIRST_VALUE": case "LAST_VALUE": fn = `${c.fn}(${col}${c.ign ? " IGNORE NULLS" : ""})`; break;
+    case "NTH_VALUE": fn = `NTH_VALUE(${col}, ${int(c.n, 2)})${c.ign ? " IGNORE NULLS" : ""}`; break;
+    case "COUNT_STAR": fn = "COUNT(*)"; break;
+    case "LISTAGG": fn = `LISTAGG(${col}, ${q(c.sep == null ? ", " : c.sep)}) WITHIN GROUP (ORDER BY ${ord.length ? ord.join(", ") : col})`; break;
+    default: fn = m.col ? `${c.fn}(${col})` : `${c.fn}()`;
+  }
+  const over = [];
+  if (part.length) over.push("PARTITION BY " + part.join(", "));
+  if (!m.noOrder && !m.orderWithin && ord.length) {
+    over.push("ORDER BY " + ord.join(", "));
+    if (m.frame && frameSql(c)) over.push(frameSql(c));
+  }
+  return `${fn} OVER (${over.join(" ")})`;
+}
+function calcRefs(c) {
+  if (c.kind === "expr") {
+    const s = (c.expr || "").replace(/'(?:[^']|'')*'/g, "").toUpperCase();
+    return [...new Set(s.match(/"[^"]+"|[A-Z_][A-Z0-9_$#]*/g) || [])].map(x => x.replace(/"/g, ""));
+  }
+  return [c.col, ...(c.part || []), ...(c.order || []).map(o => o.col)].filter(Boolean).map(normName);
+}
+function describeCalc(c) {
+  if (c.kind === "expr") return "Calculated from other columns of this row" + (c.expr ? "." : " — write a SQL expression, e.g. (ACTUAL_DEPARTURE - ACTUAL_ARRIVAL) * 24");
+  const m = WFN[c.fn] || {};
+  const part = (c.part || []).filter(Boolean), ord = (c.order || []).filter(o => o.col);
+  const pt = part.length ? `For each ${part.join(" + ")}` : "Across all rows";
+  const ot = ord.length ? ord.map(o => `${o.col}${o.dir === "DESC" ? " (newest/largest first)" : ""}`).join(", then ") : "(no order)";
+  const col = c.col || "?";
+  const fr = {whole: "over the whole group", running: "from the first row up to this row", moving: `over the last ${int(c.frameN, 3)} rows`, centered: `over ${int(c.frameN, 3)} rows before and after`, toEnd: "from this row to the last row", custom: "over a custom frame"}[c.frame];
+  switch (c.fn) {
+    case "ROW_NUMBER": return `${pt}, number the rows 1, 2, 3… ordered by ${ot}. Filter = 1 to keep one row per group.`;
+    case "RANK": return `${pt}, rank rows by ${ot}. Ties share a rank and leave gaps (1, 1, 3).`;
+    case "DENSE_RANK": return `${pt}, rank rows by ${ot}. Ties share a rank with no gaps (1, 1, 2).`;
+    case "NTILE": return `${pt}, split rows into ${int(c.n, 4)} equal buckets ordered by ${ot}.`;
+    case "PERCENT_RANK": return `${pt}, relative position 0 → 1 ordered by ${ot}.`;
+    case "CUME_DIST": return `${pt}, share of rows at or before this one ordered by ${ot}.`;
+    case "LAG": return `${pt}, take ${col} from ${int(c.off || 1, 1)} row(s) before, ordered by ${ot}${c.def ? ` (or ${c.def} if none)` : " (NULL for the first row)"}.`;
+    case "LEAD": return `${pt}, take ${col} from ${int(c.off || 1, 1)} row(s) after, ordered by ${ot}${c.def ? ` (or ${c.def} if none)` : " (NULL for the last row)"}.`;
+    case "FIRST_VALUE": return `${pt}, the first ${col} ordered by ${ot}${fr ? ", " + fr : ""}.`;
+    case "LAST_VALUE": return `${pt}, the last ${col} ordered by ${ot}${fr ? ", " + fr : ""}.`;
+    case "NTH_VALUE": return `${pt}, the ${int(c.n, 2)}th ${col} ordered by ${ot}.`;
+    case "RATIO_TO_REPORT": return `${pt}, ${col} as a fraction (0–1) of the group total.`;
+    case "LISTAGG": return `${pt}, all ${col} values in one text, separated by "${c.sep == null ? ", " : c.sep}", ordered by ${ord.length ? ot : col}.`;
+    case "COUNT_STAR": return `${pt}, count rows${ord.length && fr ? " " + fr : ord.length ? " up to this row (running)" : " in the group"}.`;
+    default: return `${pt}, ${c.fn} of ${col}${ord.length ? (fr ? " " + fr : " from the first row up to this row (running — Oracle's default when ORDER BY is set)") + `, ordered by ${ot}` : " over the whole group"}.`;
+  }
+}
+function calcWarnings(c, avail) {
+  const w = [];
+  if (c.kind === "expr") { if (!(c.expr || "").trim()) w.push("Expression is empty."); return w; }
+  const m = WFN[c.fn] || {};
+  const ord = (c.order || []).filter(o => o.col);
+  if (m.needOrder && !ord.length) w.push(`${c.fn} needs an ORDER BY column.`);
+  if (m.col && !c.col) w.push("Pick a column.");
+  if (c.fn === "LAST_VALUE" && c.frame === "default" && ord.length) w.push("Trap: with the default frame LAST_VALUE returns the current row's value. Choose “Whole partition”.");
+  if (c.frame !== "default" && m.frame && !ord.length) w.push("A frame only works together with ORDER BY.");
+  for (const r of calcRefs(c)) if (avail && !avail.has(r) && !["NULL", "SYSDATE", "SYSTIMESTAMP", "TRUNC", "ROUND", "NVL", "NVL2", "CASE", "WHEN", "THEN", "ELSE", "END", "AND", "OR", "NOT", "IS", "IN", "CAST", "AS", "DATE", "NUMBER", "TO_CHAR", "TO_DATE", "TO_NUMBER", "COALESCE", "NULLIF", "DECODE", "ABS", "GREATEST", "LEAST", "UPPER", "LOWER", "SUBSTR", "INSTR", "LENGTH", "REPLACE", "TRIM", "EXTRACT", "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "FROM", "LIKE", "BETWEEN", "MOD", "FLOOR", "CEIL", "SIGN", "VARCHAR2", "INTERVAL", "TIMESTAMP", "TRUE", "FALSE"].includes(r) && !/^\d/.test(r))
+    w.push(`${r} isn't a column coming into this step.`);
+  return w;
+}
+
+/* ---------- column flow ---------- */
+function baseCols() { const b = dBuildBase(false); return b ? b.cols : []; }
+function stepOut(st, incoming) {
+  if (st.type === "sum") return [...st.groups.filter(Boolean).map(normName), ...st.aggs.filter(a => a.fn).map(aggName)];
+  const keep = st.keepAll ? incoming : st.keep.filter(Boolean).map(normName);
+  return [...keep, ...st.calcs.map(c => normName(c.name)).filter(Boolean)];
+}
+function incomingOf(idx) { let inc = baseCols(); for (let i = 0; i < idx; i++) inc = stepOut(DESIGN.steps[i], inc); return inc; }
+function aggName(a) { return normName(a.name || identify((a.fn === "COUNT_STAR" ? "ROW_COUNT" : a.fn.replace(" ", "_") + "_" + (a.col || "")))); }
+function aggSql(a) {
+  const col = a.col ? ref(a.col) : "NULL";
+  switch (a.fn) {
+    case "COUNT_STAR": return "COUNT(*)";
+    case "COUNT_DISTINCT": return `COUNT(DISTINCT ${col})`;
+    case "LISTAGG": return `LISTAGG(${col}, ', ') WITHIN GROUP (ORDER BY ${col})`;
+    default: return `${a.fn}(${col})`;
+  }
+}
+
+/* ---------- SQL ---------- */
+function stepSql(st, prev) {
+  const filters = st.filters.map(f => f.col ? cond(ref(f.col), f.cond || "") : null).filter(Boolean);
+  if (st.type === "sum") {
+    const g = st.groups.filter(Boolean).map(ref);
+    const ag = st.aggs.filter(a => a.fn).map(a => `${aggSql(a)} AS ${ref(aggName(a))}`);
+    let s = `SELECT ${[...g, ...ag].join(",\n       ") || "COUNT(*) AS ROW_COUNT"}\nFROM ${prev}${g.length ? "\nGROUP BY " + g.join(", ") : ""}`;
+    if (filters.length) s = `SELECT *\nFROM (\n${indent(s)}\n)\nWHERE ${filters.join("\n  AND ")}`;
+    return s;
+  }
+  // calculated columns, layered so a calc can use one defined before it
+  const calcs = st.calcs.filter(c => normName(c.name));
+  const layers = [[]]; let names = new Set();
+  for (const c of calcs) {
+    if (calcRefs(c).some(r => names.has(r))) { layers.push([]); names = new Set(); }
+    layers[layers.length - 1].push(c); names.add(normName(c.name));
+  }
+  let s = null, n = 0;
+  for (const L of layers) {
+    const a = s == null ? "p" : "q" + (++n);
+    const cols = [`${a}.*`, ...L.map(c => `${calcSql(c)} AS ${ref(normName(c.name))}`)];
+    s = `SELECT ${cols.join(",\n       ")}\nFROM ${s == null ? prev + " p" : `(\n${indent(s)}\n) ${a}`}`;
+  }
+  if (!st.keepAll || filters.length) {
+    const out = st.keepAll ? "*" : [...st.keep.filter(Boolean).map(normName), ...calcs.map(c => normName(c.name))].map(ref).join(", ") || "*";
+    s = `SELECT ${out}\nFROM (\n${indent(s)}\n)${filters.length ? "\nWHERE " + filters.join("\n  AND ") : ""}`;
+  }
+  return s;
+}
+function buildFull(upto) {
+  if (upto == null) upto = DESIGN.steps.length;
+  const steps = DESIGN.steps.slice(0, upto);
+  if (!steps.length) { const b = dBuildBase(true); return b ? b.sql : ""; }
+  const b = dBuildBase(false); if (!b) return "";
+  const parts = [`${BASE_NAME} AS (\n${indent(b.sql)}\n)`];
+  let prev = BASE_NAME;
+  for (const st of steps) { parts.push(`${st.name} AS (\n${indent(stepSql(st, prev))}\n)`); prev = st.name; }
+  const last = steps[steps.length - 1];
+  let sql = `WITH ${parts.join(",\n")}\nSELECT *\nFROM ${prev}`;
+  const ord = last.sorts.filter(s => s.col).map(s => `${ref(normName(s.col))} ${s.dir || "ASC"}`);
+  if (ord.length) sql += "\nORDER BY " + ord.join(", ");
+  return sql;
+}
+
+/* ---------- step factory ---------- */
+function uniqStepName(base) { const used = new Set([BASE_NAME, ...DESIGN.steps.map(s => s.name)]); let n = identify(base) || "STEP", k = 2, c = n; while (used.has(c)) c = n + "_" + k++; return c; }
+function mkStep(type, name) { return {id: nid(), type, name: uniqStepName(name || (type === "sum" ? "SUMMARY" : "STEP" + (DESIGN.steps.length + 2))), keepAll: true, keep: [], calcs: [], filters: [], sorts: [], groups: [], aggs: []}; }
+function mkWin(fn, o = {}) { const c = Object.assign({id: nid(), kind: "win", fn, col: "", off: "1", def: "", n: fn === "NTILE" ? "4" : "2", sep: ", ", ign: false, part: [], order: [], frame: "default", frameN: "3", frameCustom: "", name: "", auto: true}, o); if (!o.name) c.name = autoCalcName(c); else c.auto = false; return c; }
+function mkExpr(name, expr) { return {id: nid(), kind: "expr", name: identify(name) || "CALC", expr: expr || "", auto: false, part: [], order: []}; }
+
+/* ---------- step UI ---------- */
+const opt = (v, cur, label) => `<option value="${esc(v)}" ${v === cur ? "selected" : ""}>${esc(label == null ? v : label)}</option>`;
+const colIn = (attrs, val, dl, ph) => `<input type="text" class="mono" list="${dl}" ${attrs} value="${esc(val || "")}" placeholder="${esc(ph || "column")}">`;
+function chipsHtml(sid, cid, arr, list, dl, ph) {
+  return `<div class="chips small-chips">${list.map((v, i) => `<span class="chip">${esc(v)}<b data-act="chip-rm" data-s="${sid}" ${cid ? `data-c="${cid}"` : ""} data-arr="${arr}" data-i="${i}">×</b></span>`).join("")}
+    <input list="${dl}" data-add="${arr}" data-s="${sid}" ${cid ? `data-c="${cid}"` : ""} placeholder="${esc(ph)}"></div>`;
+}
+function calcHtml(st, c, i) {
+  const sid = st.id, cid = c.id, dl = "dl-in-" + sid, A = `data-s="${sid}" data-c="${cid}"`;
+  if (c.kind === "expr") return `<div class="calc" data-calc="${cid}">
+      <div class="calc-h"><span class="tag builtin">Expression</span><input type="text" class="mono cname" ${A} data-k="name" value="${esc(c.name)}">
+        <span class="sp"></span><span class="rb" data-act="calc-up" ${A}>▲</span><span class="rb" data-act="calc-dn" ${A}>▼</span><span class="rb" data-act="calc-rm" ${A}>✕</span></div>
+      <textarea rows="2" ${A} data-k="expr" placeholder="e.g. (CAST(ACTUAL_DEPARTURE AS DATE) - CAST(ACTUAL_ARRIVAL AS DATE)) * 24">${esc(c.expr)}</textarea>
+      <div class="desc" data-desc="${cid}"></div></div>`;
+  const m = WFN[c.fn] || {};
+  const groups = {}; Object.entries(WFN).forEach(([k, v]) => (groups[v.g] = groups[v.g] || []).push(k));
+  const fnSel = `<select ${A} data-k="fn" data-re="1">${Object.entries(groups).map(([g, ks]) => `<optgroup label="${esc(g)}">${ks.map(k => opt(k, c.fn, WFN[k].label || k)).join("")}</optgroup>`).join("")}</select>`;
+  const orderRows = (c.order || []).map((o, k) => `<div class="orow">${colIn(`data-s="${sid}" data-c="${cid}" data-arr="order" data-i="${k}" data-k="col"`, o.col, dl)}
+      <select data-s="${sid}" data-c="${cid}" data-arr="order" data-i="${k}" data-k="dir">${opt("ASC", o.dir)}${opt("DESC", o.dir)}</select>
+      <select data-s="${sid}" data-c="${cid}" data-arr="order" data-i="${k}" data-k="nulls">${opt("", o.nulls || "", "nulls: default")}${opt("FIRST", o.nulls, "NULLS FIRST")}${opt("LAST", o.nulls, "NULLS LAST")}</select>
+      <span class="rb" data-act="ord-rm" ${A} data-i="${k}">✕</span></div>`).join("");
+  return `<div class="calc" data-calc="${cid}">
+    <div class="calc-h"><span class="tag fk">Window</span>${fnSel}<span class="muted small">AS</span><input type="text" class="mono cname" ${A} data-k="name" value="${esc(c.name)}">
+      <span class="sp"></span><span class="rb" data-act="calc-up" ${A}>▲</span><span class="rb" data-act="calc-dn" ${A}>▼</span><span class="rb" data-act="calc-rm" ${A}>✕</span></div>
+    <div class="calc-g">
+      ${m.col ? `<label>Column${colIn(`${A} data-k="col"`, c.col, dl)}</label>` : ""}
+      ${m.off ? `<label>Rows back/forward<input type="number" min="1" ${A} data-k="off" value="${esc(c.off)}"></label><label>If no row, use<input type="text" class="mono" ${A} data-k="def" value="${esc(c.def)}" placeholder="NULL"></label>` : ""}
+      ${m.n ? `<label>${c.fn === "NTILE" ? "Buckets" : "N"}<input type="number" min="1" ${A} data-k="n" value="${esc(c.n)}"></label>` : ""}
+      ${m.sep ? `<label>Separator<input type="text" ${A} data-k="sep" value="${esc(c.sep)}"></label>` : ""}
+      ${m.ign ? `<label class="inline"><input type="checkbox" ${A} data-k="ign" ${c.ign ? "checked" : ""}> Ignore NULLs</label>` : ""}
+    </div>
+    <div class="calc-row"><span class="lbl">Partition by</span>${chipsHtml(sid, cid, "part", c.part || [], dl, "+ column (Enter)")}</div>
+    ${m.noOrder ? "" : `<div class="calc-row"><span class="lbl">${m.orderWithin ? "Order values by" : "Order by"}</span><div style="flex:1">${orderRows}<button class="btn small" data-act="ord-add" ${A}>+ order column</button></div></div>`}
+    ${m.frame ? `<div class="calc-row"><span class="lbl">Frame</span><select ${A} data-k="frame" data-re="1">${Object.entries(FRAMES).map(([k, v]) => opt(k, c.frame, v)).join("")}</select>
+      ${["moving", "centered"].includes(c.frame) ? `<input type="number" min="1" style="width:70px" ${A} data-k="frameN" value="${esc(c.frameN)}"> rows` : ""}
+      ${c.frame === "custom" ? `<input type="text" class="mono" style="flex:1" ${A} data-k="frameCustom" value="${esc(c.frameCustom)}" placeholder="ROWS BETWEEN 2 PRECEDING AND CURRENT ROW">` : ""}</div>` : ""}
+    <div class="desc" data-desc="${cid}"></div></div>`;
+}
+function stepHtml(st, idx) {
+  const sid = st.id, dl = "dl-in-" + sid, dlo = "dl-out-" + sid, A = `data-s="${sid}"`;
+  const filt = st.filters.map((f, i) => `<div class="orow">${colIn(`${A} data-arr="filters" data-i="${i}" data-k="col"`, f.col, dlo)}<input type="text" class="mono" style="flex:1" ${A} data-arr="filters" data-i="${i}" data-k="cond" value="${esc(f.cond)}" placeholder="= 1   ·   &lt;= 3   ·   &gt; 1   ·   IS NOT NULL"><span class="rb" data-act="filt-rm" ${A} data-i="${i}">✕</span></div>`).join("");
+  const sorts = st.sorts.map((f, i) => `<div class="orow">${colIn(`${A} data-arr="sorts" data-i="${i}" data-k="col"`, f.col, dlo)}<select ${A} data-arr="sorts" data-i="${i}" data-k="dir">${opt("ASC", f.dir)}${opt("DESC", f.dir)}</select><span class="rb" data-act="sort-rm" ${A} data-i="${i}">✕</span></div>`).join("");
+  let body;
+  if (st.type === "sum") {
+    const aggs = st.aggs.map((a, i) => `<div class="orow"><select ${A} data-arr="aggs" data-i="${i}" data-k="fn" data-re="1">${["COUNT_STAR", "COUNT", "COUNT_DISTINCT", "SUM", "AVG", "MIN", "MAX", "MEDIAN", "LISTAGG"].map(f => opt(f, a.fn, f === "COUNT_STAR" ? "COUNT(*)" : f.replace("_", " "))).join("")}</select>
+        ${a.fn === "COUNT_STAR" ? "" : colIn(`${A} data-arr="aggs" data-i="${i}" data-k="col"`, a.col, dl)}<span class="muted small">AS</span><input type="text" class="mono" ${A} data-arr="aggs" data-i="${i}" data-k="name" value="${esc(a.name)}" placeholder="${esc(aggName(Object.assign({}, a, {name: ""})))}"><span class="rb" data-act="agg-rm" ${A} data-i="${i}">✕</span></div>`).join("");
+    body = `<div class="calc-row"><span class="lbl">Group by</span>${chipsHtml(sid, null, "groups", st.groups, dl, "+ column (Enter)")}</div>
+      <div class="calc-row"><span class="lbl">Totals</span><div style="flex:1">${aggs}<button class="btn small" data-act="agg-add" ${A}>+ total</button></div></div>`;
+  } else {
+    body = `<div class="calcs">${st.calcs.map((c, i) => calcHtml(st, c, i)).join("") || '<div class="muted small" style="padding:6px 0">No calculated columns yet.</div>'}</div>
+      <div class="row" style="margin:6px 0 10px"><button class="btn small primary" data-act="win-add" ${A}>+ Window function</button><button class="btn small" data-act="expr-add" ${A}>+ Expression</button>
+        <span class="muted small">A calculation can use columns defined above it — the tool nests the SQL for you.</span></div>
+      <div class="calc-row"><span class="lbl">Columns</span><label class="inline"><input type="checkbox" ${A} data-k="keepAll" data-re="1" ${st.keepAll ? "checked" : ""}> Keep all incoming columns</label>
+        ${st.keepAll ? "" : chipsHtml(sid, null, "keep", st.keep, dl, "+ column to keep (Enter)")}</div>`;
+  }
+  return `<div class="card step" data-step="${sid}">
+    <div class="step-h"><span class="stepno">${idx + 2}</span><input type="text" class="mono sname" ${A} data-k="name" value="${esc(st.name)}" title="Name used in the WITH clause">
+      <span class="tag ${st.type === "sum" ? "import" : "fk"}">${st.type === "sum" ? "Summarize" : "Calculate"}</span>
+      <span class="muted small">reads from <b class="mono">${esc(idx ? DESIGN.steps[idx - 1].name : BASE_NAME)}</b></span><span class="sp"></span>
+      <button class="btn small" data-act="preview" ${A}>Preview ▶</button><span class="rb" data-act="step-up" ${A}>▲</span><span class="rb" data-act="step-dn" ${A}>▼</span><span class="rb" data-act="step-rm" ${A}>✕</span></div>
+    <div class="incoming small muted" data-meta="in-${sid}"></div>
+    ${body}
+    <div class="calc-row"><span class="lbl">Filter rows</span><div style="flex:1">${filt}<button class="btn small" data-act="filt-add" ${A}>+ filter</button><span class="muted small"> applied after the calculations, so you can filter on them</span></div></div>
+    <div class="calc-row"><span class="lbl">Sort</span><div style="flex:1">${sorts}<button class="btn small" data-act="sort-add" ${A}>+ sort</button><span class="muted small"> used when this is the last step / in Preview</span></div></div>
+    <div class="warn" data-meta="warn-${sid}"></div>
+    <datalist id="${dl}"></datalist><datalist id="${dlo}"></datalist></div>`;
+}
+function renderSteps() {
+  if (!DESIGN.steps) DESIGN.steps = [];
+  $("#dSteps").innerHTML = DESIGN.steps.map(stepHtml).join("");
+  refreshStepMeta();
+}
+function refreshStepMeta() {
+  const b = DESIGN.tables.length ? dBuildBase(false) : null;
+  let inc = b ? b.cols : [];
+  const dups = inc.filter((c, i) => inc.indexOf(c) !== i);
+  $("#dBaseInfo").innerHTML = !b ? "Add tables to the diagram first." :
+    `<b>${inc.length}</b> column(s) out: <span class="mono">${esc(inc.slice(0, 14).join(", "))}${inc.length > 14 ? " …" : ""}</span>` +
+    (b.partial ? `<div class="warn-l">Some tables only show key columns (not loaded from OTM yet), so later steps may not list every column.</div>` : "") +
+    (dups.length && DESIGN.steps.length ? `<div class="warn-l">Duplicate column names: ${esc([...new Set(dups)].join(", "))} — give them an alias in the grid, otherwise the next step fails.</div>` : "");
+  let partial = !!(b && b.partial);
+  DESIGN.steps.forEach(st => {
+    const card = document.querySelector(`.step[data-step="${st.id}"]`);
+    if (!card) { inc = stepOut(st, inc); if (st.type === "sum") partial = false; return; }
+    const avail = new Set(inc);
+    const out = stepOut(st, inc);
+    card.querySelector(`#dl-in-${st.id}`).innerHTML = inc.map(c => `<option value="${esc(c)}">`).join("");
+    card.querySelector(`#dl-out-${st.id}`).innerHTML = out.map(c => `<option value="${esc(c)}">`).join("");
+    card.querySelector(`[data-meta="in-${st.id}"]`).innerHTML = `Incoming: <span class="mono">${esc(inc.slice(0, 16).join(", "))}${inc.length > 16 ? ` … (+${inc.length - 16})` : ""}</span> → Out: <b>${out.length}</b> column(s)` + (partial ? ` <span class="warn-l">· column list incomplete until the table's columns are loaded</span>` : "");
+    const warns = [];
+    if (st.type === "sum") {
+      st.groups.forEach(g => { if (!partial && !avail.has(normName(g))) warns.push(`${g} isn't a column coming into this step.`); });
+      st.aggs.forEach(a => { if (!partial && a.fn !== "COUNT_STAR" && a.col && !avail.has(normName(a.col))) warns.push(`${a.col} isn't a column coming into this step.`); if (a.fn !== "COUNT_STAR" && !a.col) warns.push(`Pick a column for ${a.fn}.`); });
+    } else {
+      const seen = new Set(avail);
+      st.calcs.forEach(c => {
+        const ws = calcWarnings(c, partial ? null : seen);
+        const nm = normName(c.name);
+        if (!nm) ws.push("Give the calculation a name.");
+        else if (avail.has(nm)) ws.push(`${nm} already exists as an incoming column — pick another name.`);
+        const d = card.querySelector(`[data-desc="${c.id}"]`);
+        if (d) d.innerHTML = `<div>${esc(describeCalc(c))}</div>` + ws.map(w => `<div class="warn-l">⚠ ${esc(w)}</div>`).join("");
+        if (nm) seen.add(nm);
+      });
+      if (!st.keepAll) st.keep.forEach(k => { if (!partial && !avail.has(normName(k))) warns.push(`${k} isn't a column coming into this step.`); });
+    }
+    const outSet = new Set(out);
+    if (st.type === "sum") partial = false;
+    if (!partial) st.filters.forEach(f => { if (f.col && !outSet.has(normName(f.col))) warns.push(`Filter column ${f.col} isn't an output of this step.`); });
+    if (!partial) st.sorts.forEach(f => { if (f.col && !outSet.has(normName(f.col))) warns.push(`Sort column ${f.col} isn't an output of this step.`); });
+    const dupOut = out.filter((c, i) => out.indexOf(c) !== i);
+    if (dupOut.length) warns.push(`Duplicate output names: ${[...new Set(dupOut)].join(", ")}.`);
+    card.querySelector(`[data-meta="warn-${st.id}"]`).innerHTML = warns.map(w => `<div class="warn-l">⚠ ${esc(w)}</div>`).join("");
+    inc = out;
+  });
+}
+
+/* ---------- step events (delegated) ---------- */
+function targetObj(el) {
+  const st = stepById(+el.dataset.s); if (!st) return null;
+  let o = st;
+  if (el.dataset.c) o = st.calcs.find(c => c.id === +el.dataset.c);
+  if (o && el.dataset.arr && el.dataset.i != null && !el.dataset.add) o = o[el.dataset.arr][+el.dataset.i];
+  return {st, o};
+}
+function stepChanged(structural) { if (structural) renderSteps(); else refreshStepMeta(); renderDSql(true); dSave(); }
+$("#dSteps").addEventListener("input", e => {
+  const el = e.target; if (!el.dataset.k) return;
+  const t = targetObj(el); if (!t || !t.o) return;
+  const k = el.dataset.k;
+  t.o[k] = el.type === "checkbox" ? el.checked : el.value;
+  if (k === "name" && el.dataset.c) t.o.auto = false;
+  const c = el.dataset.c ? t.st.calcs.find(x => x.id === +el.dataset.c) : null;
+  if (c && c.auto && ["col", "frame", "fn"].includes(k) && !el.dataset.arr) { c.name = autoCalcName(c); const ni = document.querySelector(`.calc[data-calc="${c.id}"] .cname`); if (ni) ni.value = c.name; }
+  stepChanged(!!el.dataset.re && el.tagName !== "INPUT" || el.type === "checkbox" && !!el.dataset.re);
+});
+$("#dSteps").addEventListener("change", e => {
+  const el = e.target;
+  if (el.dataset.k === "name" && !el.dataset.c && !el.dataset.arr) {   // step name: sanitize + unique
+    const st = stepById(+el.dataset.s); const old = st.name; st.name = "";
+    st.name = uniqStepName(identify(el.value) || old); el.value = st.name; stepChanged(true); return;
+  }
+  if (el.dataset.k === "name" && el.dataset.c) { const t = targetObj(el); t.o.name = identify(el.value) || t.o.name; el.value = t.o.name; stepChanged(false); return; }
+  if (el.dataset.re && el.tagName === "SELECT") stepChanged(true);
+  if (el.dataset.add) addChip(el);
+});
+$("#dSteps").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.dataset.add) { e.preventDefault(); addChip(e.target); } });
+function addChip(el) {
+  const v = el.value.trim(); if (!v) return;
+  const st = stepById(+el.dataset.s); const o = el.dataset.c ? st.calcs.find(c => c.id === +el.dataset.c) : st;
+  const arr = o[el.dataset.add] = o[el.dataset.add] || [];
+  v.split(/[ ,]+/).filter(Boolean).forEach(x => { x = normName(x); if (!arr.includes(x)) arr.push(x); });
+  el.value = ""; stepChanged(true);
+  const again = document.querySelector(`[data-add="${el.dataset.add}"][data-s="${el.dataset.s}"]${el.dataset.c ? `[data-c="${el.dataset.c}"]` : ":not([data-c])"}`); if (again) again.focus();
+}
+$("#dSteps").addEventListener("click", e => {
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  const st = stepById(+el.dataset.s); if (!st) return;
+  const c = el.dataset.c ? st.calcs.find(x => x.id === +el.dataset.c) : null;
+  const i = +el.dataset.i, idx = DESIGN.steps.indexOf(st), ci = c ? st.calcs.indexOf(c) : -1;
+  const swap = (arr, a, b) => { if (b >= 0 && b < arr.length) [arr[a], arr[b]] = [arr[b], arr[a]]; };
+  switch (el.dataset.act) {
+    case "chip-rm": (c || st)[el.dataset.arr].splice(i, 1); break;
+    case "win-add": st.calcs.push(mkWin("ROW_NUMBER")); break;
+    case "expr-add": st.calcs.push(mkExpr("CALC_" + (st.calcs.length + 1))); break;
+    case "calc-rm": st.calcs.splice(ci, 1); break;
+    case "calc-up": swap(st.calcs, ci, ci - 1); break;
+    case "calc-dn": swap(st.calcs, ci, ci + 1); break;
+    case "ord-add": c.order.push({col: "", dir: "ASC", nulls: ""}); break;
+    case "ord-rm": c.order.splice(i, 1); break;
+    case "filt-add": st.filters.push({col: "", cond: ""}); break;
+    case "filt-rm": st.filters.splice(i, 1); break;
+    case "sort-add": st.sorts.push({col: "", dir: "ASC"}); break;
+    case "sort-rm": st.sorts.splice(i, 1); break;
+    case "agg-add": st.aggs.push({fn: "COUNT_STAR", col: "", name: ""}); break;
+    case "agg-rm": st.aggs.splice(i, 1); break;
+    case "step-rm": if (!confirm(`Remove step ${st.name}?`)) return; DESIGN.steps.splice(idx, 1); break;
+    case "step-up": swap(DESIGN.steps, idx, idx - 1); break;
+    case "step-dn": swap(DESIGN.steps, idx, idx + 1); break;
+    case "preview": return previewStep(idx + 1, st.name);
+    default: return;
+  }
+  stepChanged(true);
+});
+$("#dAddCalcStep").onclick = () => { if (!DESIGN.tables.length) return dmsg("Add tables to the diagram first.", "err"); const s = mkStep("calc"); s.calcs.push(mkWin("ROW_NUMBER")); DESIGN.steps.push(s); stepChanged(true); document.querySelector(`.step[data-step="${s.id}"]`)?.scrollIntoView({behavior: "smooth", block: "center"}); };
+$("#dAddSumStep").onclick = () => { if (!DESIGN.tables.length) return dmsg("Add tables to the diagram first.", "err"); const s = mkStep("sum"); s.aggs.push({fn: "COUNT_STAR", col: "", name: ""}); DESIGN.steps.push(s); stepChanged(true); document.querySelector(`.step[data-step="${s.id}"]`)?.scrollIntoView({behavior: "smooth", block: "center"}); };
+$("#dPreviewBase").onclick = () => previewStep(0, BASE_NAME);
+
+async function runInDesigner(sql, label) {
+  if (!sql) return;
+  sql = await resolveParams(sql, label); if (sql == null) return;
+  if (!CONNECTED) { $("#dRunInfo").textContent = ""; $("#dRes").innerHTML = `<div class="msg err" style="margin:10px">Not connected — go to the Connection tab.</div>`; $("#dResCard").scrollIntoView({behavior: "smooth", block: "center"}); return; }
+  $("#dRunInfo").textContent = `Running ${label}…`;
+  $("#dResCard").scrollIntoView({behavior: "smooth", block: "center"});
+  const r = await api("/api/query", {sql, maxRows: +$("#dMax").value || 200});
+  if (r.error) { $("#dRunInfo").textContent = label; $("#dRes").innerHTML = `<div class="msg err" style="margin:10px">${esc(r.error)}</div>`; return; }
+  const tm = r.timing || {};
+  $("#dRunInfo").textContent = `${label} · ${r.rows.length.toLocaleString()} row(s)${r.truncated ? " (limit reached)" : ""} · ${fmtS(r.elapsedMs)}` + (tm.otmMs != null ? ` (OTM ${fmtS(tm.otmMs)} · ${fmtMB(tm.bytes)})` : "");
+  vgrid($("#dRes"), r, {gidLinks: false});
+  HISTORY = [sql, ...HISTORY.filter(h => h !== sql)].slice(0, 30); localStorage.setItem("history", JSON.stringify(HISTORY)); renderHistory();
+}
+function previewStep(upto, name) { runInDesigner(buildFull(upto), "Preview of " + name); }
+
+/* ================================================================ RECIPES */
+// Slot types: table · col · cols (several optional columns) · num · dir · agg · rank · unit
+// Presets are OTM examples. Column names come from general OTM knowledge — the form flags any
+// column that isn't in your instance once the table's columns are loaded.
+const TIME_MULT = {hours: "* 24", minutes: "* 24 * 60", days: ""};
+const dateDiff = (a, b, unit) => `ROUND((CAST(${ref(a)} AS DATE) - CAST(${ref(b)} AS DATE)) ${TIME_MULT[unit] || "* 24"}, 2)`;
+const ordOf = (col, dir) => [{col: normName(col), dir: dir || "ASC", nulls: ""}];
+const cl = arr => arr.filter(Boolean).map(normName);
+
+const RECIPES = [
+  {id: "latest", title: "Latest (or first) row per group", desc: "One row per group — e.g. the most recent status per shipment. ROW_NUMBER + filter = 1.",
+    slots: [{k: "table", t: "table", l: "Table"}, {k: "group", t: "cols", n: 2, l: "One row per (group)"}, {k: "order", t: "col", l: "Decide 'latest' by"}, {k: "dir", t: "dir", l: "Keep", def: "DESC", labels: {DESC: "latest / largest", ASC: "first / smallest"}}],
+    presets: [
+      {l: "Latest status update per shipment", v: {table: "SHIPMENT_STATUS", group: ["SHIPMENT_GID"], order: "UPDATE_DATE", dir: "DESC"}},
+      {l: "Most recent shipment per carrier", v: {table: "SHIPMENT", group: ["SERVPROV_GID"], order: "START_TIME", dir: "DESC"}},
+      {l: "Latest ref number per order release", v: {table: "ORDER_RELEASE_REFNUM", group: ["ORDER_RELEASE_GID"], order: "INSERT_DATE", dir: "DESC"}},
+    ],
+    build: v => { const s = mkStep("calc", "RANKED"); s.calcs.push(mkWin("ROW_NUMBER", {part: cl(v.group), order: ordOf(v.order, v.dir), name: "RN"})); s.filters.push({col: "RN", cond: "= 1"}); s.sorts = cl(v.group).map(c => ({col: c, dir: "ASC"})); return [s]; }},
+
+  {id: "gaps", title: "Time between consecutive rows (travel & dwell)", desc: "LAG brings the previous row's time onto this row, then the difference is calculated. Classic stop-to-stop analysis.",
+    slots: [{k: "table", t: "table", l: "Table"}, {k: "group", t: "cols", n: 1, l: "Sequence within"}, {k: "order", t: "col", l: "Sequence order"}, {k: "start", t: "col", l: "Arrival / start time"}, {k: "end", t: "col", l: "Departure / end time"}, {k: "unit", t: "unit", l: "Show in", def: "hours"}],
+    presets: [
+      {l: "Stop-to-stop travel & dwell (actual)", v: {table: "SHIPMENT_STOP", group: ["SHIPMENT_GID"], order: "STOP_NUM", start: "ACTUAL_ARRIVAL", end: "ACTUAL_DEPARTURE", unit: "hours"}},
+      {l: "Stop-to-stop travel & dwell (planned)", v: {table: "SHIPMENT_STOP", group: ["SHIPMENT_GID"], order: "STOP_NUM", start: "PLANNED_ARRIVAL", end: "PLANNED_DEPARTURE", unit: "hours"}},
+    ],
+    build: v => {
+      const s = mkStep("calc", "WITH_PREV");
+      s.calcs.push(mkWin("LAG", {col: normName(v.end), part: cl(v.group), order: ordOf(v.order), name: "PREV_" + identify(v.end)}));
+      s.calcs.push(mkExpr("TRAVEL_" + v.unit.toUpperCase(), dateDiff(v.start, "PREV_" + identify(v.end), v.unit)));
+      s.calcs.push(mkExpr("DWELL_" + v.unit.toUpperCase(), dateDiff(v.end, v.start, v.unit)));
+      s.sorts = [...cl(v.group), normName(v.order)].map(c => ({col: c, dir: "ASC"})); return [s];
+    }},
+
+  {id: "firstlast", title: "First & last value per group", desc: "e.g. first pickup and last delivery location of each shipment. FIRST_VALUE / LAST_VALUE over the whole group, one row per group.",
+    slots: [{k: "table", t: "table", l: "Table"}, {k: "group", t: "cols", n: 1, l: "Per"}, {k: "order", t: "col", l: "Ordered by"}, {k: "val", t: "col", l: "Value to pick"}],
+    presets: [{l: "First pickup & last delivery location per shipment", v: {table: "SHIPMENT_STOP", group: ["SHIPMENT_GID"], order: "STOP_NUM", val: "LOCATION_GID"}}],
+    build: v => {
+      const s = mkStep("calc", "FIRST_LAST"), P = cl(v.group), O = ordOf(v.order), V = normName(v.val);
+      s.calcs.push(mkWin("FIRST_VALUE", {col: V, part: P, order: O, frame: "whole", name: "FIRST_" + identify(V)}));
+      s.calcs.push(mkWin("LAST_VALUE", {col: V, part: P, order: O, frame: "whole", name: "LAST_" + identify(V)}));
+      s.calcs.push(mkWin("COUNT_STAR", {part: P, name: "ROWS_IN_GROUP"}));
+      s.calcs.push(mkWin("ROW_NUMBER", {part: P, order: O, name: "RN"}));
+      s.keepAll = false; s.keep = [...P];
+      s.filters.push({col: "RN", cond: "= 1"}); s.sorts = P.map(c => ({col: c, dir: "ASC"})); return [s];
+    }},
+
+  {id: "topn", title: "Top N per group", desc: "e.g. the 3 most expensive shipments on every lane. Ranking + filter.",
+    slots: [{k: "table", t: "table", l: "Table"}, {k: "group", t: "cols", n: 2, l: "Per group"}, {k: "metric", t: "col", l: "Rank by"}, {k: "dir", t: "dir", l: "Top means", def: "DESC", labels: {DESC: "largest", ASC: "smallest"}}, {k: "n", t: "num", l: "How many", def: "3"}, {k: "rank", t: "rank", l: "Ties", def: "ROW_NUMBER"}],
+    presets: [
+      {l: "3 most expensive shipments per lane", v: {table: "SHIPMENT", group: ["SOURCE_LOCATION_GID", "DEST_LOCATION_GID"], metric: "TOTAL_ACTUAL_COST", dir: "DESC", n: "3", rank: "ROW_NUMBER"}},
+      {l: "5 heaviest shipments per carrier", v: {table: "SHIPMENT", group: ["SERVPROV_GID"], metric: "TOTAL_WEIGHT", dir: "DESC", n: "5", rank: "ROW_NUMBER"}},
+    ],
+    build: v => { const s = mkStep("calc", "RANKED"), P = cl(v.group); s.calcs.push(mkWin(v.rank || "ROW_NUMBER", {part: P, order: [{col: normName(v.metric), dir: v.dir, nulls: "LAST"}], name: "RNK"})); s.filters.push({col: "RNK", cond: "<= " + int(v.n, 3)}); s.sorts = [...P.map(c => ({col: c, dir: "ASC"})), {col: "RNK", dir: "ASC"}]; return [s]; }},
+
+  {id: "rankgroups", title: "Rank groups by a total (e.g. carriers per lane)", desc: "Summarize first (e.g. average cost per carrier per lane), then rank inside each lane. Two steps.",
+    slots: [{k: "table", t: "table", l: "Table"}, {k: "group", t: "cols", n: 2, l: "Compare within"}, {k: "item", t: "col", l: "Items to rank"}, {k: "metric", t: "col", l: "Measure"}, {k: "agg", t: "agg", l: "Total type", def: "AVG"}, {k: "dir", t: "dir", l: "Best is", def: "ASC", labels: {ASC: "lowest", DESC: "highest"}}, {k: "n", t: "num", l: "Keep top", def: "5"}],
+    presets: [
+      {l: "Carrier ranking per lane by average cost", v: {table: "SHIPMENT", group: ["SOURCE_LOCATION_GID", "DEST_LOCATION_GID"], item: "SERVPROV_GID", metric: "TOTAL_ACTUAL_COST", agg: "AVG", dir: "ASC", n: "5"}},
+      {l: "Busiest carriers per origin (shipment count)", v: {table: "SHIPMENT", group: ["SOURCE_LOCATION_GID"], item: "SERVPROV_GID", metric: "SHIPMENT_GID", agg: "COUNT", dir: "DESC", n: "5"}},
+    ],
+    build: v => {
+      const P = cl(v.group), I = normName(v.item);
+      const s1 = mkStep("sum", "TOTALS"); s1.groups = [...P, I];
+      s1.aggs = [{fn: v.agg || "AVG", col: normName(v.metric), name: "MEASURE"}, {fn: "COUNT_STAR", col: "", name: "ROW_COUNT"}];
+      DESIGN.steps.push(s1);   // so the next step gets a unique name
+      const s2 = mkStep("calc", "RANKED"); s2.calcs.push(mkWin("RANK", {part: P, order: [{col: "MEASURE", dir: v.dir, nulls: "LAST"}], name: "RNK"}));
+      s2.filters.push({col: "RNK", cond: "<= " + int(v.n, 5)}); s2.sorts = [...P.map(c => ({col: c, dir: "ASC"})), {col: "RNK", dir: "ASC"}];
+      DESIGN.steps.pop(); return [s1, s2];
+    }},
+
+  {id: "running", title: "Running total & % of total", desc: "Cumulative sum over time, the group total, and how far along the total you are.",
+    slots: [{k: "table", t: "table", l: "Table"}, {k: "group", t: "cols", n: 2, l: "Restart for each (optional)"}, {k: "order", t: "col", l: "Over time / order"}, {k: "val", t: "col", l: "Value"}],
+    presets: [{l: "Running shipment cost per carrier", v: {table: "SHIPMENT", group: ["SERVPROV_GID"], order: "START_TIME", val: "TOTAL_ACTUAL_COST"}}],
+    build: v => {
+      const s = mkStep("calc", "RUNNING"), P = cl(v.group), V = normName(v.val);
+      s.calcs.push(mkWin("SUM", {col: V, part: P, order: ordOf(v.order), frame: "running", name: "RUNNING_" + identify(V)}));
+      s.calcs.push(mkWin("SUM", {col: V, part: P, name: "TOTAL_" + identify(V)}));
+      s.calcs.push(mkExpr("PCT_OF_TOTAL", `ROUND(100 * RUNNING_${identify(V)} / NULLIF(TOTAL_${identify(V)}, 0), 2)`));
+      s.sorts = [...P, normName(v.order)].map(c => ({col: c, dir: "ASC"})); return [s];
+    }},
+
+  {id: "moving", title: "Moving average", desc: "Average of the last N rows — smooths noisy values (cost, transit time).",
+    slots: [{k: "table", t: "table", l: "Table"}, {k: "group", t: "cols", n: 2, l: "Separately for each (optional)"}, {k: "order", t: "col", l: "Ordered by"}, {k: "val", t: "col", l: "Value"}, {k: "n", t: "num", l: "Window size (rows)", def: "7"}],
+    presets: [{l: "7-shipment moving average cost per carrier", v: {table: "SHIPMENT", group: ["SERVPROV_GID"], order: "START_TIME", val: "TOTAL_ACTUAL_COST", n: "7"}}],
+    build: v => { const s = mkStep("calc", "MOVING"), P = cl(v.group), V = normName(v.val); s.calcs.push(mkWin("AVG", {col: V, part: P, order: ordOf(v.order), frame: "moving", frameN: int(v.n, 7), name: "MOVING_AVG_" + identify(V)})); s.sorts = [...P, normName(v.order)].map(c => ({col: c, dir: "ASC"})); return [s]; }},
+
+  {id: "dups", title: "Find duplicates", desc: "Rows whose key appears more than once — e.g. the same reference number on two shipments.",
+    slots: [{k: "table", t: "table", l: "Table"}, {k: "keys", t: "cols", n: 3, l: "Duplicate when these match"}],
+    presets: [
+      {l: "Duplicate shipment reference numbers", v: {table: "SHIPMENT_REFNUM", keys: ["SHIPMENT_REFNUM_QUAL_GID", "SHIPMENT_REFNUM_VALUE"]}},
+      {l: "Duplicate order release reference numbers", v: {table: "ORDER_RELEASE_REFNUM", keys: ["ORDER_RELEASE_REFNUM_QUAL_GID", "ORDER_RELEASE_REFNUM_VALUE"]}},
+    ],
+    build: v => { const s = mkStep("calc", "DUP_CHECK"), K = cl(v.keys); s.calcs.push(mkWin("COUNT_STAR", {part: K, name: "DUP_COUNT"})); s.calcs.push(mkWin("ROW_NUMBER", {part: K, order: ordOf(K[0]), name: "DUP_SEQ"})); s.filters.push({col: "DUP_COUNT", cond: "> 1"}); s.sorts = [...K, "DUP_SEQ"].map(c => ({col: c, dir: "ASC"})); return [s]; }},
+
+  {id: "share", title: "Share of total", desc: "Each category's total and its % of the overall (or per-group) total — e.g. carrier share of spend.",
+    slots: [{k: "table", t: "table", l: "Table"}, {k: "cat", t: "col", l: "Category"}, {k: "val", t: "col", l: "Value to total"}, {k: "group", t: "cols", n: 1, l: "% within each (optional)"}],
+    presets: [
+      {l: "Carrier share of shipment spend", v: {table: "SHIPMENT", cat: "SERVPROV_GID", val: "TOTAL_ACTUAL_COST", group: []}},
+      {l: "Carrier share of spend per origin", v: {table: "SHIPMENT", cat: "SERVPROV_GID", val: "TOTAL_ACTUAL_COST", group: ["SOURCE_LOCATION_GID"]}},
+    ],
+    build: v => {
+      const P = cl(v.group), C = normName(v.cat);
+      const s1 = mkStep("sum", "TOTALS"); s1.groups = [...P, C]; s1.aggs = [{fn: "SUM", col: normName(v.val), name: "TOTAL_VALUE"}, {fn: "COUNT_STAR", col: "", name: "ROW_COUNT"}];
+      DESIGN.steps.push(s1);
+      const s2 = mkStep("calc", "SHARES"); s2.calcs.push(mkWin("RATIO_TO_REPORT", {col: "TOTAL_VALUE", part: P, name: "SHARE"})); s2.calcs.push(mkExpr("SHARE_PCT", "ROUND(100 * SHARE, 2)"));
+      s2.sorts = [...P.map(c => ({col: c, dir: "ASC"})), {col: "TOTAL_VALUE", dir: "DESC"}];
+      DESIGN.steps.pop(); return [s1, s2];
+    }},
+];
+
+/* ---------- recipe dialog ---------- */
+let REC = null, RECV = {};
+function openRecipes() { $("#recModal").style.display = "flex"; renderRecList(); if (!REC) pickRecipe(RECIPES[0].id); }
+function closeRecipes() { $("#recModal").style.display = "none"; }
+function renderRecList() {
+  $("#recList").innerHTML = RECIPES.map(r => `<div class="rec ${REC && REC.id === r.id ? "on" : ""}" data-r="${r.id}"><b>${esc(r.title)}</b><div class="small muted">${esc(r.desc)}</div></div>`).join("");
+  $("#recList").querySelectorAll("[data-r]").forEach(d => d.onclick = () => pickRecipe(d.dataset.r));
+}
+function pickRecipe(id) {
+  REC = RECIPES.find(r => r.id === id); RECV = {};
+  REC.slots.forEach(s => RECV[s.k] = s.t === "cols" ? [] : (s.def || ""));
+  if (REC.presets[0]) Object.assign(RECV, JSON.parse(JSON.stringify(REC.presets[0].v)));
+  renderRecList(); renderRecForm();
+}
+function recColsFor(table) { const k = knownCols(normName(table || "")); return k.cols.map(c => c.n); }
+function renderRecForm() {
+  const r = REC, tbl = normName(RECV.table || "");
+  const loaded = !!SCHEMA.columns[tbl];
+  const cols = recColsFor(tbl);
+  const flag = v => v && loaded && !cols.includes(normName(v)) ? `<span class="warn-l" title="Not found in ${esc(tbl)}">⚠ not in ${esc(tbl)}</span>` : "";
+  const field = s => {
+    const v = RECV[s.k];
+    switch (s.t) {
+      case "table": return `<input type="text" class="mono" list="tableList" data-rk="table" value="${esc(v)}">${tbl && !TABLESET.has(tbl) ? `<span class="warn-l">⚠ not in schema data</span>` : ""}`;
+      case "col": return `<input type="text" class="mono" list="recCols" data-rk="${s.k}" value="${esc(v)}">${flag(v)}`;
+      case "cols": return Array.from({length: s.n}, (_, i) => `<input type="text" class="mono" list="recCols" data-rk="${s.k}" data-ri="${i}" value="${esc((v || [])[i] || "")}" placeholder="${i ? "(optional)" : ""}" style="margin-bottom:4px">${flag((v || [])[i])}`).join("");
+      case "num": return `<input type="number" min="1" data-rk="${s.k}" value="${esc(v)}" style="width:100px">`;
+      case "dir": return `<select data-rk="${s.k}">${["DESC", "ASC"].map(d => opt(d, v, s.labels[d])).join("")}</select>`;
+      case "agg": return `<select data-rk="${s.k}">${["AVG", "SUM", "COUNT", "MIN", "MAX", "MEDIAN"].map(d => opt(d, v)).join("")}</select>`;
+      case "rank": return `<select data-rk="${s.k}">${opt("ROW_NUMBER", v, "Exactly N rows (ROW_NUMBER)")}${opt("RANK", v, "Keep ties, gaps after (RANK)")}${opt("DENSE_RANK", v, "Keep ties, no gaps (DENSE_RANK)")}</select>`;
+      case "unit": return `<select data-rk="${s.k}">${["hours", "minutes", "days"].map(d => opt(d, v)).join("")}</select>`;
+    }
+  };
+  $("#recForm").innerHTML = `<h3 style="margin-top:0">${esc(r.title)}</h3><p class="small muted">${esc(r.desc)}</p>
+    ${r.presets.length ? `<label>OTM example<select id="recPreset"><option value="">— choose to fill the form —</option>${r.presets.map((p, i) => `<option value="${i}">${esc(p.l)}</option>`).join("")}</select></label>` : ""}
+    <div class="recslots">${r.slots.map(s => `<label>${esc(s.l)}${field(s)}</label>`).join("")}</div>
+    <label class="inline" style="margin-top:8px"><input type="checkbox" id="recAll" checked> Output all columns of the table (untick to keep only the columns above)</label>
+    <div class="small muted" style="margin-top:8px">${loaded ? `Columns checked against ${esc(tbl)} in your instance.` : CONNECTED ? `<a href="#" id="recLoad">Load ${esc(tbl)}'s columns</a> to check the names.` : "Connect to OTM to check these column names against your instance."}</div>
+    <div class="row" style="margin-top:14px;justify-content:flex-end"><button class="btn" id="recCancel">Cancel</button><button class="btn primary" id="recApply">Build query</button></div>
+    <datalist id="recCols">${cols.map(c => `<option value="${esc(c)}">`).join("")}</datalist>`;
+  $("#recForm").querySelectorAll("[data-rk]").forEach(el => el.addEventListener("change", () => {
+    const k = el.dataset.rk;
+    if (el.dataset.ri != null) { RECV[k] = RECV[k] || []; RECV[k][+el.dataset.ri] = el.value.trim(); } else RECV[k] = el.value.trim();
+    if (k === "table") { RECV[k] = normName(RECV[k]); if (CONNECTED) loadCols(RECV[k]).then(() => renderRecForm()); }
+    renderRecForm();
+  }));
+  const ps = $("#recPreset"); if (ps) ps.onchange = () => { if (ps.value === "") return; Object.assign(RECV, JSON.parse(JSON.stringify(r.presets[+ps.value].v))); if (CONNECTED) loadCols(normName(RECV.table)).then(renderRecForm); renderRecForm(); };
+  const rl = $("#recLoad"); if (rl) rl.onclick = e => { e.preventDefault(); rl.textContent = "Loading…"; loadCols(tbl).then(ok => { if (!ok) rl.textContent = "Couldn't load columns"; else renderRecForm(); }); };
+  $("#recCancel").onclick = closeRecipes;
+  $("#recApply").onclick = applyRecipe;
+}
+async function applyRecipe() {
+  const r = REC, v = JSON.parse(JSON.stringify(RECV));
+  v.table = normName(v.table);
+  const missing = r.slots.filter(s => ["table", "col"].includes(s.t) && !(s.k === "group") && !v[s.k]).map(s => s.l);
+  if (r.slots.some(s => s.t === "cols" && !s.l.includes("optional") && !(v[s.k] || []).filter(Boolean).length)) missing.push(r.slots.find(s => s.t === "cols").l);
+  if (missing.length) return alert("Please fill: " + missing.join(", "));
+  if (DESIGN.tables.length && !confirm("This replaces the current query in the Designer. Continue?")) return;
+  if (CONNECTED) await loadCols(v.table);
+  const all = $("#recAll").checked;
+  DESIGN = dNewDesign();
+  const t = createTable(v.table, 40, 30);
+  const mkF = col => ({id: nid(), tid: t.id, col, alias: "", output: true, agg: "", sort: "", sortOrder: "", filter: ""});
+  if (all) DESIGN.fields.push(mkF("*"));
+  else {
+    const need = [];
+    const own = v.table + "_GID";
+    if (knownCols(v.table).cols.some(c => c.n === own)) need.push(own);
+    r.slots.forEach(s => { if (s.t === "col") need.push(normName(v[s.k])); if (s.t === "cols") (v[s.k] || []).filter(Boolean).forEach(c => need.push(normName(c))); });
+    [...new Set(need.filter(Boolean))].forEach(c => DESIGN.fields.push(mkF(c)));
+  }
+  DESIGN.steps = r.build(v);
+  closeRecipes(); render(); renderSteps(); dSave();
+  dmsg(`Built “${r.title}”. Step 1 (BASE) is the diagram; the next step(s) are below the grid. Click Run ▶ or Preview any step.`, "ok");
+  document.querySelector("#dSteps").scrollIntoView({behavior: "smooth", block: "start"});
+}
+$("#dRecipes").onclick = openRecipes;
+$("#recClose").onclick = closeRecipes;
+$("#recModal").addEventListener("mousedown", e => { if (e.target.id === "recModal") closeRecipes(); });
+
+$("#dRecipes2").onclick = openRecipes;
+$("#btnToDesigner").onclick = pathToDesigner;
+
+/*__EDITOR_JS__*/
+/*__PROFILES_JS__*/
+/*__R360_JS__*/
+/*__TABS_JS__*/
+/*__PERF_JS__*/
+/*__SAVED_JS__*/
+/*__DSQL_JS__*/
+
+/* ---------------------------------------------------------------- boot */
+(async function boot() {
+  const o = localStorage.getItem("owner"); if (o !== null) $("#owner").value = o;
+  renderSyncSql();
+  try {
+    const st = await api("/api/status");
+    loadProfiles(st); renderEnv(); pFill(CUR_PID);
+    await loadSchemaFromHelper();
+  } catch (e) {
+    loadProfiles(null); renderEnv(); pFill(CUR_PID);
+    SCHEMA = {edges: BUILTIN.map(e => ({...e})), columns: {}, meta: {source: "Built-in starter pack"}}; rebuild();
+  }
+  if (!CONNECTED && SCHEMA.meta.source === "Built-in starter pack") msg("#pathMsg", "Using the built-in starter pack. Connect and sync (Schema Data tab) to use your instance's full schema.", "info");
+})();
+</script>
+</body>
+</html>

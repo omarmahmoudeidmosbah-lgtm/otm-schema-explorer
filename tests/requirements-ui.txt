@@ -1,0 +1,3 @@
+# Browser tests: everything in requirements-test.txt plus Playwright.
+-r requirements-test.txt
+playwright>=1.40

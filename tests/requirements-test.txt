@@ -1,0 +1,4 @@
+# Test tools for the helper tests (the tool itself needs nothing but Python).
+pytest>=7
+duckdb>=1.1
+sqlglot>=23

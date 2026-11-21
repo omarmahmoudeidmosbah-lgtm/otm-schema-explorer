@@ -1,0 +1,24 @@
+# Built files (download them from the Releases page, or run: python tools/build.py)
+dist/
+*.tmp
+
+# Your own data - never commit these
+otm_schema_cache.json
+otm_saved_queries.json
+otm_saved_queries_*.json
+*.bak
+
+# Python / test leftovers
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+test-results/
+playwright-report/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
